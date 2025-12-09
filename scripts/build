@@ -1,0 +1,51 @@
+#!/bin/bash
+appName="sweep"
+
+echo "running tests"
+testResult=$(go test ./game-engine)
+testResultCode=$?
+
+if (( $testResultCode != 0 )); then 
+    echo "tests not ok"
+    echo "aborting build"
+
+    return 2 2> /dev/null
+    exit 2
+else
+    echo "tests ok"
+    echo "building"
+    echo
+fi
+
+OSs=("darwin" "freebsd" "linux" "netbsd" "openbsd" "windows")
+
+ARCHes=("amd64" "arm64")
+
+for GOOS in "${OSs[@]}";
+do
+    for GOARCH in "${ARCHes[@]}";
+    do
+        echo "compiling binary for $GOOS $GOARCH"
+        EXT=""
+        if [[ $GOOS == "windows" ]];
+        then 
+            EXT=".exe"
+        fi
+        path="./bin/$appName-$GOOS-$GOARCH$EXT"
+
+        buildResult=$(GOOS=$GOOS GOARCH=$GOARCH go build -o $path .)
+        buildResultCode=$?
+        if (( $buildResultCode != 0 )); then
+            echo "build failed"
+            echo $buildResult
+
+            return 2 2> /dev/null
+            exit 2
+        fi
+
+        echo "saved to $path"
+        echo
+    done
+done
+
+echo "build complete"
