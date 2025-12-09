@@ -3,6 +3,6 @@ package glyphs
 var (
 	WRONG_FLAG = "󱣮"
 	FLAG       = "󰈻"
-	BOMB       = "󰚑"
+	MINE       = "󰚑"
 	EMPTY      = " "
 )

@@ -10,10 +10,10 @@ func TestFlagToggleFile(t *testing.T) {
 	g := GameEngine{}
 	field := [][]types.Tile{
 		{
-			types.ClosedBomb, types.OpenBomb,
+			types.ClosedMine, types.OpenMine,
 		},
 		{
-			types.FlaggedSafe, types.FlaggedBomb,
+			types.FlaggedSafe, types.FlaggedMine,
 		},
 		{
 			types.OpenSafe, types.ClosedSafe,
@@ -22,10 +22,10 @@ func TestFlagToggleFile(t *testing.T) {
 
 	expectedField := [][]types.Tile{
 		{
-			types.FlaggedBomb, types.FlaggedBomb,
+			types.FlaggedMine, types.FlaggedMine,
 		},
 		{
-			types.ClosedSafe, types.ClosedBomb,
+			types.ClosedSafe, types.ClosedMine,
 		},
 		{
 			types.FlaggedSafe, types.FlaggedSafe,
@@ -53,8 +53,8 @@ func TestFlagToggleFile(t *testing.T) {
 	}
 }
 
-func TestCountNeighbouringBombs(t *testing.T) {
-	for bombCount := range 8 {
+func TestCountNeighbouringMines(t *testing.T) {
+	for MineCount := range 8 {
 		g := GameEngine{}
 		center := types.Position{
 			X: uint16(1),
@@ -62,13 +62,13 @@ func TestCountNeighbouringBombs(t *testing.T) {
 		}
 		g.SetFieldSize(uint16(3), uint16(3))
 
-		g.SetBombCount(uint16(bombCount))
-		g.SetBombs(center)
-		expected := bombCount
+		g.SetMineCount(uint16(MineCount))
+		g.SetMines(center)
+		expected := MineCount
 
-		result := g.CountNeighbouringBombs(center)
+		result := g.CountNeighbouringMines(center)
 		if fmt.Sprint(result) != fmt.Sprint(expected) {
-			t.Errorf("[Assertion failed] %v != %v\nbombCount: %v\n", result, expected, g.bombCount)
+			t.Errorf("[Assertion failed] %v != %v\nMineCount: %v\n", result, expected, g.MineCount)
 			t.Error(g.field)
 		}
 	}
@@ -78,7 +78,7 @@ func TestFinishCondition(t *testing.T) {
 	g := GameEngine{}
 	g.field = [][]types.Tile{
 		{
-			types.ClosedBomb, types.OpenSafe,
+			types.ClosedMine, types.OpenSafe,
 		},
 		{
 			types.OpenSafe, types.OpenSafe,
@@ -90,7 +90,7 @@ func TestFinishCondition(t *testing.T) {
 	})
 
 	if g.IsFinished() != true {
-		panic("flagged the last bomb - should have won")
+		panic("flagged the last Mine - should have won")
 	}
 }
 
@@ -98,10 +98,10 @@ func TestOpenTile(t *testing.T) {
 	g := GameEngine{}
 
 	g.SetFieldSize(2, 2)
-	g.SetBombCount(3)
+	g.SetMineCount(3)
 
 	safePosition := types.Position{X: 0, Y: 0}
-	g.SetBombs(safePosition)
+	g.SetMines(safePosition)
 
 	field := g.GetField()
 	for x := range field {
@@ -113,7 +113,7 @@ func TestOpenTile(t *testing.T) {
 			if currentPosition == safePosition {
 				wanted = types.ClosedSafe
 			} else {
-				wanted = types.ClosedBomb
+				wanted = types.ClosedMine
 			}
 
 			if wanted != tile {
@@ -125,7 +125,7 @@ func TestOpenTile(t *testing.T) {
 			if wanted == types.ClosedSafe {
 				wanted = types.OpenSafe
 			} else {
-				wanted = types.OpenBomb
+				wanted = types.OpenMine
 			}
 
 			tile = field[x][y]
@@ -139,7 +139,7 @@ func TestOpenTile(t *testing.T) {
 
 func TestSetTile(t *testing.T) {
 	tiles := []types.Tile{
-		types.ClosedBomb, types.ClosedSafe, types.FlaggedBomb, types.OpenSafe, types.OpenBomb, types.FlaggedSafe, types.OpenSafe, types.OutOfBounds,
+		types.ClosedMine, types.ClosedSafe, types.FlaggedMine, types.OpenSafe, types.OpenMine, types.FlaggedSafe, types.OpenSafe, types.OutOfBounds,
 	}
 	for _, tile := range tiles {
 		g := GameEngine{}
@@ -159,15 +159,15 @@ func TestSetTile(t *testing.T) {
 	}
 }
 
-func TestAllFieldSizesAndBombCounts(t *testing.T) {
+func TestAllFieldSizesAndMineCounts(t *testing.T) {
 	g := GameEngine{}
 	for width := range 10_000_000 {
 		for height := range 10_000_000 {
-			for bombs := range 10_000_000 {
+			for Mines := range 10_000_000 {
 
 				defer func() {
 					r := recover()
-					if width == 0 || height == 0 || bombs >= width*height && r != nil {
+					if width == 0 || height == 0 || Mines >= width*height && r != nil {
 						return
 					}
 					if width == 0 && r == nil {
@@ -176,8 +176,8 @@ func TestAllFieldSizesAndBombCounts(t *testing.T) {
 					if height == 0 && r == nil {
 						t.Error("height == 0 but has not panicked")
 					}
-					if bombs >= width*height && r == nil {
-						t.Error("bomb count >= width * height but has not panicked")
+					if Mines >= width*height && r == nil {
+						t.Error("Mine count >= width * height but has not panicked")
 					}
 					if r != nil {
 						t.Errorf("Was not supposed to panic\n%v", r)
@@ -185,15 +185,15 @@ func TestAllFieldSizesAndBombCounts(t *testing.T) {
 				}()
 
 				g.SetFieldSize(uint16(width), uint16(height))
-				g.SetBombCount(uint16(bombs))
-				g.SetBombs(types.Position{})
+				g.SetMineCount(uint16(Mines))
+				g.SetMines(types.Position{})
 
 			}
 		}
 	}
 }
 
-func TestSetBombs(t *testing.T) {
+func TestSetMines(t *testing.T) {
 	for width := range 25 {
 		if width < 2 {
 			continue
@@ -202,32 +202,32 @@ func TestSetBombs(t *testing.T) {
 			if height < 2 {
 				continue
 			}
-			for bombCount := range (height * width) - 1 {
+			for MineCount := range (height * width) - 1 {
 				g := GameEngine{}
 				g.SetFieldSize(uint16(width), uint16(height))
-				g.SetBombCount(uint16(bombCount))
+				g.SetMineCount(uint16(MineCount))
 				position := types.Position{
 					X: uint16(width / 2),
 					Y: uint16(height / 2),
 				}
-				g.SetBombs(position)
+				g.SetMines(position)
 
 				count := 0
 				for x := range g.field {
 					for y := range g.field[x] {
-						if g.field[x][y] == types.ClosedBomb {
+						if g.field[x][y] == types.ClosedMine {
 							count++
 						}
 					}
 				}
-				if uint16(count) != g.bombCount {
-					t.Errorf("[Assertion failed] %v != %v\nreal bomb count != wanted bomb count", count, g.bombCount)
+				if uint16(count) != g.MineCount {
+					t.Errorf("[Assertion failed] %v != %v\nreal Mine count != wanted Mine count", count, g.MineCount)
 				}
 				if g.GetTile(position) != types.ClosedSafe {
 					t.Errorf("[Assertion failed] %v - %v is not safe!", position.X, position.Y)
 				}
-				if g.bombCount != uint16(bombCount) {
-					t.Errorf("[Assertion failed] %v != %v\ngameEngine.bombCount != set bombCount", g.bombCount, bombCount)
+				if g.MineCount != uint16(MineCount) {
+					t.Errorf("[Assertion failed] %v != %v\ngameEngine.MineCount != set MineCount", g.MineCount, MineCount)
 				}
 			}
 		}

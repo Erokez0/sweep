@@ -1,13 +1,15 @@
 package styles
 
 import (
+	"sweep/shared/vars/glyphs"
+
 	lipgloss "github.com/charmbracelet/lipgloss"
 )
 
 func createTileStyle(color string) lipgloss.Style {
 	lpColor := lipgloss.Color(color)
 	if isFill {
-		return tileStyle.Background(lpColor).Foreground(adaptiveColor)
+		return tileStyle.Background(lpColor).Foreground(reverseAdaptiveColor)
 	}
 	return tileStyle.Foreground(lpColor).Background(adaptiveColor)
 }
@@ -44,6 +46,10 @@ var (
 	SixColor   = "5"
 	SevenColor = "1"
 	EightColor = "14"
+	FlagColor = "15"
+	WrongFlagColor = "15"
+	MineColor = "15"
+	EmptyColor = "15"
 
 	Zero  TileStyle = tileStyle.Foreground(lipgloss.Color(ZeroColor))
 	One   TileStyle = tileStyle.Foreground(lipgloss.Color(OneColor))
@@ -54,18 +60,18 @@ var (
 	Six   TileStyle = tileStyle.Foreground(lipgloss.Color(SixColor))
 	Seven TileStyle = tileStyle.Foreground(lipgloss.Color(SevenColor))
 	Eight TileStyle = tileStyle.Foreground(lipgloss.Color(EightColor))
+	Flag TileStyle = tileStyle.Foreground(lipgloss.Color(EightColor))
+	WrongFlag TileStyle = tileStyle.Foreground(lipgloss.Color(EightColor))
+	Mine TileStyle = tileStyle.Foreground(lipgloss.Color(EightColor))
+	Empty TileStyle = tileStyle.Foreground(lipgloss.Color(EightColor))
 
-	Flag      = tileStyle
-	Bomb      = tileStyle
-	WrongFlag = tileStyle
-	Empty     = tileStyle
 )
 
 func SetFill(fill bool) {
 	if fill {
 		tileStyle = tileStyle.Background(adaptiveColor).Foreground(lipgloss.NoColor{})
 		Flag = tileStyle
-		Bomb = tileStyle
+		Mine = tileStyle
 		WrongFlag = tileStyle
 		Empty = tileStyle
 	}
@@ -118,4 +124,9 @@ var TileStyles = map[string]*lipgloss.Style{
 	"6": &Six,
 	"7": &Seven,
 	"8": &Eight,
+
+	glyphs.FLAG: &Flag,
+	glyphs.WRONG_FLAG: &WrongFlag,
+	glyphs.MINE: &Mine,
+	glyphs.EMPTY: &Empty,
 }

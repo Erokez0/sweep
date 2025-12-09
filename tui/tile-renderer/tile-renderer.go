@@ -18,8 +18,8 @@ func RenderTileByContent(tileContent string, isFocused bool) string {
 	switch tileContent {
 	case "0":
 		tileContent = "x"
-	case glyphs.BOMB:
-		template = styles.Bomb.Render(template)
+	case glyphs.MINE:
+		template = styles.Mine.Render(template)
 	case glyphs.WRONG_FLAG:
 		template = styles.WrongFlag.Render(template)
 	case glyphs.FLAG:
@@ -36,9 +36,9 @@ func RenderTileByContent(tileContent string, isFocused bool) string {
 
 func RenderTileByType(tile types.Tile, content string) string {
 	switch tile {
-	case types.ClosedBomb, types.OpenBomb:
-		content = glyphs.BOMB
-	case types.FlaggedBomb:
+	case types.ClosedMine, types.OpenMine:
+		content = glyphs.MINE
+	case types.FlaggedMine:
 		content = glyphs.FLAG
 	case types.FlaggedSafe:
 		content = glyphs.WRONG_FLAG

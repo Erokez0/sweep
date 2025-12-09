@@ -205,7 +205,7 @@ func (c *Config) setFlags() {
 			}
 
 		case flags.ASCII, flags.ASCII_SHORT:
-			glyphs.BOMB = "B"
+			glyphs.MINE = "M"
 			glyphs.FLAG = "F"
 			glyphs.WRONG_FLAG = "W"
 

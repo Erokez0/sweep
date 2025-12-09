@@ -21,7 +21,7 @@ func RenderThemePreview() string {
 			"6", "7",
 		},
 		{
-			glyphs.BOMB, glyphs.FLAG,
+			glyphs.MINE, glyphs.FLAG,
 		},
 	}
 

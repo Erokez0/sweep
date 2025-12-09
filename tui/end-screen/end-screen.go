@@ -64,10 +64,10 @@ func (m model) View() string {
 		var line string
 		for y := range field[x] {
 			tile := field[x][y]
-			if tile == types.OpenBomb {
+			if tile == types.OpenMine {
 				win = false
 			}
-			content := fmt.Sprint(m.gameEngine.CountNeighbouringBombs(types.Position{
+			content := fmt.Sprint(m.gameEngine.CountNeighbouringMines(types.Position{
 				X: uint16(x),
 				Y: uint16(y),
 			}))

@@ -14,10 +14,10 @@ var _ types.IGameEngine = (*GameEngine)(nil)
 type GameEngine struct {
 	types.IGameEngine
 	isFinished       bool
-	bombCount        uint16
+	MineCount        uint16
 	width            uint16
 	height           uint16
-	flaggedBombCount uint16
+	flaggedMineCount uint16
 	flaggedCount     uint16
 	field            [][]types.Tile
 }
@@ -25,14 +25,14 @@ type GameEngine struct {
 func (g *GameEngine) GetField() [][]types.Tile {
 	return g.field
 }
-func (g *GameEngine) SetBombCount(count uint16) {
+func (g *GameEngine) SetMineCount(count uint16) {
 	if g.height != 0 && g.width != 0 && count >= g.width*g.height {
-		panic("bomb count must be less than field size squared")
+		panic("Mine count must be less than field size squared")
 	}
-	g.bombCount = count
+	g.MineCount = count
 }
 
-func (g *GameEngine) CountNeighbouringBombs(position types.Position) byte {
+func (g *GameEngine) CountNeighbouringMines(position types.Position) byte {
 	x, y := position.GetCoords()
 	if x > g.width {
 		return 0
@@ -60,7 +60,7 @@ func (g *GameEngine) CountNeighbouringBombs(position types.Position) byte {
 			defer wg.Done()
 			tile := g.GetTile(neighbour)
 			switch tile {
-			case types.ClosedBomb, types.FlaggedBomb, types.OpenBomb:
+			case types.ClosedMine, types.FlaggedMine, types.OpenMine:
 				atomic.AddUint32(&counter, 1)
 			}
 		}()
@@ -71,12 +71,12 @@ func (g *GameEngine) CountNeighbouringBombs(position types.Position) byte {
 }
 
 // First return value is the content of the tile to show in the UI
-// Second return value is whether the tile is a bomb
+// Second return value is whether the tile is a Mine
 func (g *GameEngine) OpenTile(position types.Position) {
 	switch g.GetTile(position) {
-	case types.ClosedBomb, types.FlaggedBomb, types.OpenBomb, types.OutOfBounds:
+	case types.ClosedMine, types.FlaggedMine, types.OpenMine, types.OutOfBounds:
 		g.isFinished = true
-		g.setTile(position, types.OpenBomb)
+		g.setTile(position, types.OpenMine)
 	case types.ClosedSafe, types.FlaggedSafe:
 		g.setTile(position, types.OpenSafe)
 	}
@@ -101,14 +101,14 @@ func (g *GameEngine) setTile(position types.Position, tile types.Tile) {
 func (g *GameEngine) FlagToggleTile(position types.Position) {
 	tile := g.GetTile(position)
 	switch tile {
-	case types.ClosedBomb:
-		g.flaggedBombCount++
+	case types.ClosedMine:
+		g.flaggedMineCount++
 		g.flaggedCount++
-		g.setTile(position, types.FlaggedBomb)
-	case types.FlaggedBomb:
-		g.flaggedBombCount--
+		g.setTile(position, types.FlaggedMine)
+	case types.FlaggedMine:
+		g.flaggedMineCount--
 		g.flaggedCount--
-		g.setTile(position, types.ClosedBomb)
+		g.setTile(position, types.ClosedMine)
 	case types.ClosedSafe:
 		g.flaggedCount++
 		g.setTile(position, types.FlaggedSafe)
@@ -116,35 +116,35 @@ func (g *GameEngine) FlagToggleTile(position types.Position) {
 		g.flaggedCount--
 		g.setTile(position, types.ClosedSafe)
 	}
-	g.isFinished = g.flaggedBombCount == g.bombCount && g.flaggedCount == g.flaggedBombCount
+	g.isFinished = g.flaggedMineCount == g.MineCount && g.flaggedCount == g.flaggedMineCount
 }
 
-// gameEngine.SetBombs() sets the bombs on the field
-// Argument safeTile where no bomb can be generated
+// gameEngine.SetMines() sets the Mines on the field
+// Argument safeTile where no Mine can be generated
 // To removed a safeTile simply set it out of bounds (less then 0 or more then fieldSize)
-func (g *GameEngine) SetBombs(safeTile types.Position) {
-	bombPositions := []types.Position{}
+func (g *GameEngine) SetMines(safeTile types.Position) {
+	MinePositions := []types.Position{}
 	maxX, maxY := g.width, g.height
 	minValue := uint16(0)
 
 	var wg sync.WaitGroup
 
-	for len(bombPositions) < int(g.bombCount) {
+	for len(MinePositions) < int(g.MineCount) {
 		x, y := uint16(rand.Intn(int(maxX+minValue))), uint16(rand.Intn(int(maxY+minValue)))
 		currentPosition := types.Position{X: x, Y: y}
-		if currentPosition != safeTile && !slices.Contains(bombPositions, currentPosition) {
-			bombPositions = append(bombPositions, currentPosition)
+		if currentPosition != safeTile && !slices.Contains(MinePositions, currentPosition) {
+			MinePositions = append(MinePositions, currentPosition)
 		}
 	}
 
-	for ix := range bombPositions {
+	for ix := range MinePositions {
 		wg.Go(func() {
-			g.setTile(bombPositions[ix], types.ClosedBomb)
+			g.setTile(MinePositions[ix], types.ClosedMine)
 		})
 	}
 	wg.Wait()
 
-	g.bombCount = uint16(len(bombPositions))
+	g.MineCount = uint16(len(MinePositions))
 }
 
 func (g *GameEngine) IsFinished() bool {
@@ -159,8 +159,8 @@ func (g *GameEngine) SetFieldSize(width uint16, height uint16) {
 		panic("field height cannot be 0")
 	}
 
-	if g.bombCount >= width*height {
-		panic("width multiplied by height must be more than bomb count")
+	if g.MineCount >= width*height {
+		panic("width multiplied by height must be more than Mine count")
 	}
 
 	g.width = width

@@ -10,7 +10,7 @@ import (
 
 	config "sweep/config"
 	gameengine "sweep/game-engine"
-	"sweep/shared/consts"
+	consts "sweep/shared/consts"
 	glyphs "sweep/shared/vars/glyphs"
 	endscreen "sweep/tui/end-screen"
 	styles "sweep/tui/styles"
@@ -33,7 +33,7 @@ type model struct {
 
 func CreateModel(config *config.Config) model {
 	gameEngine := gameengine.GameEngine{}
-	gameEngine.SetBombCount(config.Mines)
+	gameEngine.SetMineCount(config.Mines)
 	gameEngine.SetFieldSize(config.Width, config.Height)
 
 	tiles := make([][]string, config.Width)
@@ -83,7 +83,7 @@ func (m model) openTile(position types.Position) {
 		return
 	}
 
-	count := m.gameEngine.CountNeighbouringBombs(position)
+	count := m.gameEngine.CountNeighbouringMines(position)
 	m.tiles[x][y] = strconv.Itoa(int(count))
 
 	if count == 0 {
@@ -135,7 +135,7 @@ func (m model) openAroundOpenTile(position types.Position) {
 	for _, position := range neighbours {
 		wg.Go(func() {
 			switch m.gameEngine.GetTile(position) {
-			case types.FlaggedSafe, types.FlaggedBomb, types.OpenSafe, types.OutOfBounds:
+			case types.FlaggedSafe, types.FlaggedMine, types.OpenSafe, types.OutOfBounds:
 				return
 			}
 			x, y := position.GetCoords()
@@ -146,7 +146,7 @@ func (m model) openAroundOpenTile(position types.Position) {
 				return
 			}
 
-			count := m.gameEngine.CountNeighbouringBombs(position)
+			count := m.gameEngine.CountNeighbouringMines(position)
 			m.tiles[x][y] = strconv.Itoa(int(count))
 			if count == 0 {
 				m.openSafeAroundTile(position)
@@ -195,7 +195,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		}
 		if m.config.Bindings.IsOpenTile(msgString) {
 			if m.moves == 0 {
-				m.gameEngine.SetBombs(m.cursorPosition)
+				m.gameEngine.SetMines(m.cursorPosition)
 			}
 			m.moves++
 			m.openTile(m.cursorPosition)

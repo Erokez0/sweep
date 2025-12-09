@@ -3,9 +3,9 @@ package types
 type Tile byte
 
 const (
-	ClosedBomb Tile = iota
-	FlaggedBomb
-	OpenBomb
+	ClosedMine Tile = iota
+	FlaggedMine
+	OpenMine
 	ClosedSafe
 	OpenSafe
 	FlaggedSafe
@@ -28,13 +28,12 @@ type IGameEngine interface {
 	IsFinished() bool
 	GetField() [][]Tile
 	SetFieldSize(uint16, uint16)
-	SetBombCount(uint16)
-	SetBombs(Position)
-	CountNeighbouringBombs(Position) byte
+	SetMineCount(uint16)
+	SetMines(Position)
+	CountNeighbouringMines(Position) byte
 
 	GetWidth() uint16
 	GetHeight() uint16
 }
 
 type Flag = string
-
