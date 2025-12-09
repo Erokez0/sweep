@@ -227,12 +227,14 @@ func (m model) View() string {
 
 	for i := range m.inputs {
 		b.WriteString(m.inputs[i].View())
-		b.WriteRune('\n')
-		if len(m.messages[i]) == 0 {
+		isNotLast := i != len(m.inputs)
+		if isNotLast {
 			b.WriteRune('\n')
 		}
-		for _, errorMessage := range m.messages[i] {
-			b.WriteString(styles.BrightText.Faint(true).Render(errorMessage))
+		if len(m.messages[i]) > 0 {
+			b.WriteString(styles.BrightText.Faint(true).Render(m.messages[i][0]))
+		}
+		if isNotLast {
 			b.WriteRune('\n')
 		}
 	}
@@ -241,7 +243,7 @@ func (m model) View() string {
 	if m.focusIndex == len(m.inputs) {
 		button = &focusedButton
 	}
-	fmt.Fprintf(&b, "\n\n%s\n\n", *button)
+	fmt.Fprintf(&b, "\n%s\n", *button)
 
 	return b.String()
 }
