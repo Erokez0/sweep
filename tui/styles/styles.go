@@ -70,43 +70,51 @@ var (
 func SetFill(fill bool) {
 	if fill {
 		tileStyle = tileStyle.Background(adaptiveColor).Foreground(lipgloss.NoColor{})
-		Flag = tileStyle
-		Mine = tileStyle
-		WrongFlag = tileStyle
-		Empty = tileStyle
 	}
 	isFill = fill
 }
 
-func SetColor(colorName, newColor string) {
-	switch colorName {
+func SetColor(key, value string) {
+	switch key {
 	case "0":
-		ZeroColor = newColor
-		Zero = createTileStyle(newColor)
+		ZeroColor = value
+		Zero = createTileStyle(value)
 	case "1":
-		OneColor = newColor
-		One = createTileStyle(newColor)
+		OneColor = value
+		One = createTileStyle(value)
 	case "2":
-		TwoColor = newColor
-		Two = createTileStyle(newColor)
+		TwoColor = value
+		Two = createTileStyle(value)
 	case "3":
-		ThreeColor = newColor
-		Three = createTileStyle(newColor)
+		ThreeColor = value
+		Three = createTileStyle(value)
 	case "4":
-		FourColor = newColor
-		Four = createTileStyle(newColor)
+		FourColor = value
+		Four = createTileStyle(value)
 	case "5":
-		FiveColor = newColor
-		Five = createTileStyle(newColor)
+		FiveColor = value
+		Five = createTileStyle(value)
 	case "6":
-		SixColor = newColor
-		Six = createTileStyle(newColor)
+		SixColor = value
+		Six = createTileStyle(value)
 	case "7":
-		SevenColor = newColor
-		Seven = createTileStyle(newColor)
+		SevenColor = value
+		Seven = createTileStyle(value)
 	case "8":
-		EightColor = newColor
-		Eight = createTileStyle(newColor)
+		EightColor = value
+		Eight = createTileStyle(value)
+	case "mine":
+		MineColor = value
+		Mine = createTileStyle(value)
+	case "flag":
+		FlagColor = value
+		Flag = createTileStyle(value)
+	case "wrong flag":
+		WrongFlagColor = value
+		WrongFlag = createTileStyle(value)
+	case "empty":
+		EmptyColor = value
+		Empty = createTileStyle(value)
 	default:
 		return
 	}

@@ -18,14 +18,6 @@ func RenderTileByContent(tileContent string, isFocused bool) string {
 	switch tileContent {
 	case "0":
 		tileContent = "x"
-	case glyphs.MINE:
-		template = styles.Mine.Render(template)
-	case glyphs.WRONG_FLAG:
-		template = styles.WrongFlag.Render(template)
-	case glyphs.FLAG:
-		template = styles.Flag.Render(template)
-	case glyphs.EMPTY:
-		template = styles.Empty.Render(template)
 	}
 	if ok {
 		template = style.Render(template)

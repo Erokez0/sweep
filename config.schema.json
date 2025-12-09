@@ -94,6 +94,18 @@
         },
         "8": {
           "$ref": "#/definitions/color"
+        },
+        "mine":{
+          "$ref": "#/definitions/color"
+        },
+        "empty":{
+          "$ref": "#/definitions/color"
+        },
+        "flag":{
+          "$ref": "#/definitions/color"
+        },
+        "wrong flag":{
+          "$ref": "#/definitions/color"
         }
       }
     },

@@ -39,6 +39,10 @@ type Colors struct {
 	Six   Color `json:"6"`
 	Seven Color `json:"7"`
 	Eight Color `json:"8"`
+	Mine Color `json:"mine"`
+	Flag Color `json:"flag"`
+	WrongFlag Color `json:"wrong flag"`
+	Empty Color `json:"empty"`
 }
 
 type Action string
@@ -92,7 +96,7 @@ type Config struct {
 	Height uint16 `json:"height,omitempty"`
 }
 
-func (config *Config) SetColors() {
+func (config *Config) setColors() {
 	if config.Colors == *new(Colors) {
 		return
 	}
@@ -122,6 +126,19 @@ func (config *Config) SetColors() {
 	}
 	if config.Colors.Eight.isSet() {
 		styles.SetColor("8", string(config.Colors.Eight))
+	}
+
+	if config.Colors.Mine.isSet() {
+		styles.SetColor("mine", string(config.Colors.Mine))
+	}
+	if config.Colors.Flag.isSet() {
+		styles.SetColor("flag", string(config.Colors.Flag))
+	}
+	if config.Colors.WrongFlag.isSet() {
+		styles.SetColor("wrong flag", string(config.Colors.WrongFlag))
+	}
+	if config.Colors.Empty.isSet() {
+		styles.SetColor("empty", string(config.Colors.Empty))
 	}
 }
 
@@ -215,6 +232,7 @@ func (c *Config) setFlags() {
 		}
 	}
 	if preview {
+		c.setColors()
 		print(themepreview.RenderThemePreview())
 		os.Exit(0)
 	}
@@ -241,14 +259,13 @@ func LoadConfig(configPath string) (*Config, error) {
 		}
 	}
 
-	config.SetColors()
 	config.setFlags()
+	config.setColors()
 	return config, nil
 }
 
 func GetConfig() *Config {
 	config := new(Config)
-	config.setFlags()
 
 	var err error
 	config, err = LoadConfig("/home/erokez/Desktop/code/sweep/config.json")
