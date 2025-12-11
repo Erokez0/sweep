@@ -35,15 +35,20 @@
       "uniqueItems": true,
       "items": {
         "enum": [
-          "--no-nerd",
-          "--grayscale",
-          "--theme-preview"
+          "--ascii",
+          "--preview",
+          "--config-path",
+          "--fill",
+
+          "--A",
+          "--P",
+          "--C",
+          "--F"
         ]
       }
     },
     "defaults": {
       "type": "object",
-      "additionalProperties": false,
       "required": [
         "width",
         "mines"
@@ -66,7 +71,6 @@
     "colors": {
       "description": "each property descibes a color for each type",
       "type": "object",
-      "additionalProperties": false,
       "properties": {
         "0": {
           "$ref": "#/definitions/color"

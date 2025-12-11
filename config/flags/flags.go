@@ -6,9 +6,6 @@ const (
 	ASCII       types.Flag = "--ascii"
 	ASCII_SHORT types.Flag = "--A"
 
-	GRAYSCALE       types.Flag = "--grayscale"
-	GRAYSCALE_SHORT types.Flag = "--G"
-
 	THEME_PREVIEW       types.Flag = "--preview"
 	THEME_PREVIEW_SHORT types.Flag = "--P"
 
