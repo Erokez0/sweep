@@ -95,7 +95,7 @@ type Config struct {
 	Height uint16 `json:"height,omitempty"`
 }
 
-func (config *Config) setColors() {
+func (config *Config) applyColors() {
 	if config.Colors == *new(Colors) {
 		return
 	}
@@ -171,7 +171,7 @@ func getFlagIntArgument(args []string, index int) (uint16, error) {
 	return uint16(numVal), nil
 }
 
-func (c *Config) setFlags() {
+func (c *Config) applyFlags() {
 	skip := false
 	args := os.Args[1:]
 	flagList := append(args, c.Flags...)
@@ -221,9 +221,20 @@ func (c *Config) setFlags() {
 			}
 
 		case flags.ASCII, flags.ASCII_SHORT:
+			mineStyle := styles.TileStyles[glyphs.MINE]
+			delete(styles.TileStyles, glyphs.MINE)
 			glyphs.MINE = "M"
+			styles.TileStyles[glyphs.MINE] = mineStyle
+
+			flagStyle := styles.TileStyles[glyphs.FLAG]
+			delete(styles.TileStyles, glyphs.FLAG)
 			glyphs.FLAG = "F"
-			glyphs.WRONG_FLAG = "W"
+			styles.TileStyles[glyphs.FLAG] = flagStyle
+
+			WrongFlagStyle := styles.TileStyles[glyphs.WRONG_FLAG]
+			delete(styles.TileStyles, glyphs.WRONG_FLAG)
+			glyphs.MINE = "W"
+			styles.TileStyles[glyphs.WRONG_FLAG] = WrongFlagStyle
 
 		case flags.FILL, flags.FILL_SHORT:
 			styles.SetFill(true)
@@ -231,7 +242,7 @@ func (c *Config) setFlags() {
 		}
 	}
 	if preview {
-		c.setColors()
+		c.applyColors()
 		print(themepreview.RenderThemePreview())
 		os.Exit(0)
 	}
@@ -256,10 +267,11 @@ func LoadConfig(configPath string) (*Config, error) {
 		for k, v := range errors {
 			fmt.Printf("%v - %v", k, v)
 		}
+		os.Exit(1)
 	}
 
-	config.setFlags()
-	config.setColors()
+	config.applyFlags()
+	config.applyColors()
 	return config, nil
 }
 
@@ -267,14 +279,12 @@ func GetConfig() *Config {
 	config := new(Config)
 
 	var err error
-	config, err = LoadConfig("/home/erokez/Desktop/code/sweep/config.json")
+	config, err = LoadConfig("./config.json")
 	if err == nil {
 		return config
 	}
 
-	config, err = LoadConfig("../../config.default.json")
-	if err != nil {
+	config, _ = LoadConfig("../../config.default.json")
 
-	}
 	return config
 }
