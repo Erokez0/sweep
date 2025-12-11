@@ -2,15 +2,6 @@ package types
 
 type Tile byte
 
-const (
-	ClosedMine Tile = iota
-	FlaggedMine
-	OpenMine
-	ClosedSafe
-	OpenSafe
-	FlaggedSafe
-	OutOfBounds
-)
 
 type Position struct {
 	X uint16

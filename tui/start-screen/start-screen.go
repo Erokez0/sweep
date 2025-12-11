@@ -8,7 +8,7 @@ import (
 	"strings"
 
 	config "sweep/config"
-	consts "sweep/shared/consts"
+	misc "sweep/shared/consts/misc"
 	styles "sweep/tui/styles"
 
 	cursor "github.com/charmbracelet/bubbles/cursor"
@@ -90,7 +90,7 @@ func CreateModel(config *config.Config) model {
 
 func (m model) Init() tea.Cmd {
 	m.validateInputs()
-	return tea.Batch(tea.SetWindowTitle(consts.APP_NAME), tea.ClearScreen)
+	return tea.Batch(tea.SetWindowTitle(misc.APP_NAME), tea.ClearScreen)
 }
 
 func (m *model) validateInputs() {
@@ -222,7 +222,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 func (m model) View() string {
 	var b strings.Builder
 
-	b.WriteString(styles.HeaderStyle.Render(consts.APP_ASCII_LOGO))
+	b.WriteString(styles.HeaderStyle.Render(misc.APP_ASCII_LOGO))
 	b.WriteRune('\n')
 
 	for i := range m.inputs {

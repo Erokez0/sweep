@@ -12,7 +12,7 @@ import (
 	glyphs "sweep/shared/vars/glyphs"
 	"sweep/tui/styles"
 	themepreview "sweep/tui/theme-preview"
-	types "sweep/types"
+	types "sweep/shared/types"
 
 	gojsonschema "github.com/xeipuuv/gojsonschema"
 )
@@ -54,7 +54,6 @@ const (
 	MOVE_CURSOR_RIGHT Action = "moveCursorRight"
 	OPEN_TILE         Action = "openTile"
 	FLAG_TILE         Action = "flagTile"
-	SUBMIT            Action = "submit"
 )
 
 type Bindings struct {

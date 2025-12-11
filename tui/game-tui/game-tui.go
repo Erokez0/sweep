@@ -10,12 +10,13 @@ import (
 
 	config "sweep/config"
 	gameengine "sweep/game-engine"
-	consts "sweep/shared/consts"
+	misc "sweep/shared/consts/misc"
+	tiles "sweep/shared/consts/tiles"
+	types "sweep/shared/types"
 	glyphs "sweep/shared/vars/glyphs"
 	endscreen "sweep/tui/end-screen"
 	styles "sweep/tui/styles"
 	tilerenderer "sweep/tui/tile-renderer"
-	types "sweep/types"
 
 	tea "github.com/charmbracelet/bubbletea"
 )
@@ -59,7 +60,7 @@ func CreateModel(config *config.Config) model {
 }
 
 func (m model) Init() tea.Cmd {
-	return tea.Batch(tea.SetWindowTitle(consts.APP_NAME), tea.ClearScreen)
+	return tea.Batch(tea.SetWindowTitle(misc.APP_NAME), tea.ClearScreen)
 }
 
 var _ tea.Model = model{}
@@ -67,9 +68,9 @@ var _ tea.Model = model{}
 func (m model) openTile(position types.Position) {
 	tileType := m.gameEngine.GetTile(position)
 	switch tileType {
-	case types.OutOfBounds:
+	case tiles.OutOfBounds:
 		return
-	case types.OpenSafe:
+	case tiles.OpenSafe:
 		m.openAroundOpenTile(position)
 		return
 	}
@@ -109,7 +110,7 @@ func (m model) openSafeAroundTile(position types.Position) {
 	for _, neighbour := range neighbours {
 		wg.Go(func() {
 			switch m.gameEngine.GetTile(neighbour) {
-			case types.ClosedSafe:
+			case tiles.ClosedSafe:
 				m.openTile(neighbour)
 			}
 		})
@@ -135,7 +136,7 @@ func (m model) openAroundOpenTile(position types.Position) {
 	for _, position := range neighbours {
 		wg.Go(func() {
 			switch m.gameEngine.GetTile(position) {
-			case types.FlaggedSafe, types.FlaggedMine, types.OpenSafe, types.OutOfBounds:
+			case tiles.FlaggedSafe, tiles.FlaggedMine, tiles.OpenSafe, tiles.OutOfBounds:
 				return
 			}
 			x, y := position.GetCoords()
@@ -239,7 +240,7 @@ func (m model) View() string {
 		return endscreen.View()
 	}
 
-	s := styles.HeaderStyle.Render(fmt.Sprintf("%v %v/%v", consts.APP_NAME, m.flags, m.config.Mines))
+	s := styles.HeaderStyle.Render(fmt.Sprintf("%v %v/%v", misc.APP_NAME, m.flags, m.config.Mines))
 
 	var lines string
 	for x, row := range m.tiles {
@@ -263,7 +264,7 @@ func (m model) View() string {
 	timeSinceStart := time.Since(m.startTime)
 
 	beautifiedTime := beautifyTimeDuration(timeSinceStart)
-	tea.SetWindowTitle(fmt.Sprintf("%v - %v", consts.APP_NAME, beautifiedTime))
+	tea.SetWindowTitle(fmt.Sprintf("%v - %v", misc.APP_NAME, beautifiedTime))
 	s += fmt.Sprintf("time - %v", beautifiedTime)
 	return styles.TableStyle.Render(s)
 

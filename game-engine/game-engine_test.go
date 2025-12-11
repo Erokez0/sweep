@@ -2,33 +2,35 @@ package gameengine
 
 import (
 	"fmt"
-	"sweep/types"
 	"testing"
+
+	tiles "sweep/shared/consts/tiles"
+	types "sweep/shared/types"
 )
 
 func TestFlagToggleFile(t *testing.T) {
 	g := GameEngine{}
 	field := [][]types.Tile{
 		{
-			types.ClosedMine, types.OpenMine,
+			tiles.ClosedMine, tiles.OpenMine,
 		},
 		{
-			types.FlaggedSafe, types.FlaggedMine,
+			tiles.FlaggedSafe, tiles.FlaggedMine,
 		},
 		{
-			types.OpenSafe, types.ClosedSafe,
+			tiles.OpenSafe, tiles.ClosedSafe,
 		},
 	}
 
 	expectedField := [][]types.Tile{
 		{
-			types.FlaggedMine, types.FlaggedMine,
+			tiles.FlaggedMine, tiles.FlaggedMine,
 		},
 		{
-			types.ClosedSafe, types.ClosedMine,
+			tiles.ClosedSafe, tiles.ClosedMine,
 		},
 		{
-			types.FlaggedSafe, types.FlaggedSafe,
+			tiles.FlaggedSafe, tiles.FlaggedSafe,
 		},
 	}
 
@@ -78,10 +80,10 @@ func TestFinishCondition(t *testing.T) {
 	g := GameEngine{}
 	g.field = [][]types.Tile{
 		{
-			types.ClosedMine, types.OpenSafe,
+			tiles.ClosedMine, tiles.OpenSafe,
 		},
 		{
-			types.OpenSafe, types.OpenSafe,
+			tiles.OpenSafe, tiles.OpenSafe,
 		},
 	}
 
@@ -111,9 +113,9 @@ func TestOpenTile(t *testing.T) {
 			var wanted types.Tile
 
 			if currentPosition == safePosition {
-				wanted = types.ClosedSafe
+				wanted = tiles.ClosedSafe
 			} else {
-				wanted = types.ClosedMine
+				wanted = tiles.ClosedMine
 			}
 
 			if wanted != tile {
@@ -122,10 +124,10 @@ func TestOpenTile(t *testing.T) {
 
 			g.OpenTile(currentPosition)
 
-			if wanted == types.ClosedSafe {
-				wanted = types.OpenSafe
+			if wanted == tiles.ClosedSafe {
+				wanted = tiles.OpenSafe
 			} else {
-				wanted = types.OpenMine
+				wanted = tiles.OpenMine
 			}
 
 			tile = field[x][y]
@@ -139,7 +141,7 @@ func TestOpenTile(t *testing.T) {
 
 func TestSetTile(t *testing.T) {
 	tiles := []types.Tile{
-		types.ClosedMine, types.ClosedSafe, types.FlaggedMine, types.OpenSafe, types.OpenMine, types.FlaggedSafe, types.OpenSafe, types.OutOfBounds,
+		tiles.ClosedMine, tiles.ClosedSafe, tiles.FlaggedMine, tiles.OpenSafe, tiles.OpenMine, tiles.FlaggedSafe, tiles.OpenSafe, tiles.OutOfBounds,
 	}
 	for _, tile := range tiles {
 		g := GameEngine{}
@@ -215,7 +217,7 @@ func TestSetMines(t *testing.T) {
 				count := 0
 				for x := range g.field {
 					for y := range g.field[x] {
-						if g.field[x][y] == types.ClosedMine {
+						if g.field[x][y] == tiles.ClosedMine {
 							count++
 						}
 					}
@@ -223,7 +225,7 @@ func TestSetMines(t *testing.T) {
 				if uint16(count) != g.MineCount {
 					t.Errorf("[Assertion failed] %v != %v\nreal Mine count != wanted Mine count", count, g.MineCount)
 				}
-				if g.GetTile(position) != types.ClosedSafe {
+				if g.GetTile(position) != tiles.ClosedSafe {
 					t.Errorf("[Assertion failed] %v - %v is not safe!", position.X, position.Y)
 				}
 				if g.MineCount != uint16(MineCount) {

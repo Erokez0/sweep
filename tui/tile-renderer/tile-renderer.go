@@ -3,9 +3,10 @@ package tilerenderer
 import (
 	"fmt"
 
+	tiles "sweep/shared/consts/tiles"
+	types "sweep/shared/types"
 	glyphs "sweep/shared/vars/glyphs"
 	styles "sweep/tui/styles"
-	types "sweep/types"
 )
 
 func RenderTileByContent(tileContent string, isFocused bool) string {
@@ -28,11 +29,11 @@ func RenderTileByContent(tileContent string, isFocused bool) string {
 
 func RenderTileByType(tile types.Tile, content string) string {
 	switch tile {
-	case types.ClosedMine, types.OpenMine:
+	case tiles.ClosedMine, tiles.OpenMine:
 		content = glyphs.MINE
-	case types.FlaggedMine:
+	case tiles.FlaggedMine:
 		content = glyphs.FLAG
-	case types.FlaggedSafe:
+	case tiles.FlaggedSafe:
 		content = glyphs.WRONG_FLAG
 	}
 

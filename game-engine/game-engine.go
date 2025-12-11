@@ -6,7 +6,8 @@ import (
 	"sync"
 	"sync/atomic"
 
-	types "sweep/types"
+	tiles "sweep/shared/consts/tiles"
+	types "sweep/shared/types"
 )
 
 var _ types.IGameEngine = (*GameEngine)(nil)
@@ -60,7 +61,7 @@ func (g *GameEngine) CountNeighbouringMines(position types.Position) byte {
 			defer wg.Done()
 			tile := g.GetTile(neighbour)
 			switch tile {
-			case types.ClosedMine, types.FlaggedMine, types.OpenMine:
+			case tiles.ClosedMine, tiles.FlaggedMine, tiles.OpenMine:
 				atomic.AddUint32(&counter, 1)
 			}
 		}()
@@ -74,18 +75,18 @@ func (g *GameEngine) CountNeighbouringMines(position types.Position) byte {
 // Second return value is whether the tile is a Mine
 func (g *GameEngine) OpenTile(position types.Position) {
 	switch g.GetTile(position) {
-	case types.ClosedMine, types.FlaggedMine, types.OpenMine, types.OutOfBounds:
+	case tiles.ClosedMine, tiles.FlaggedMine, tiles.OpenMine, tiles.OutOfBounds:
 		g.isFinished = true
-		g.setTile(position, types.OpenMine)
-	case types.ClosedSafe, types.FlaggedSafe:
-		g.setTile(position, types.OpenSafe)
+		g.setTile(position, tiles.OpenMine)
+	case tiles.ClosedSafe, tiles.FlaggedSafe:
+		g.setTile(position, tiles.OpenSafe)
 	}
 }
 
 func (g *GameEngine) GetTile(position types.Position) types.Tile {
 	x, y := position.GetCoords()
 	if x >= g.width || y >= g.height {
-		return types.OutOfBounds
+		return tiles.OutOfBounds
 	}
 	return g.field[x][y]
 }
@@ -101,20 +102,20 @@ func (g *GameEngine) setTile(position types.Position, tile types.Tile) {
 func (g *GameEngine) FlagToggleTile(position types.Position) {
 	tile := g.GetTile(position)
 	switch tile {
-	case types.ClosedMine:
+	case tiles.ClosedMine:
 		g.flaggedMineCount++
 		g.flaggedCount++
-		g.setTile(position, types.FlaggedMine)
-	case types.FlaggedMine:
+		g.setTile(position, tiles.FlaggedMine)
+	case tiles.FlaggedMine:
 		g.flaggedMineCount--
 		g.flaggedCount--
-		g.setTile(position, types.ClosedMine)
-	case types.ClosedSafe:
+		g.setTile(position, tiles.ClosedMine)
+	case tiles.ClosedSafe:
 		g.flaggedCount++
-		g.setTile(position, types.FlaggedSafe)
-	case types.FlaggedSafe:
+		g.setTile(position, tiles.FlaggedSafe)
+	case tiles.FlaggedSafe:
 		g.flaggedCount--
-		g.setTile(position, types.ClosedSafe)
+		g.setTile(position, tiles.ClosedSafe)
 	}
 	g.isFinished = g.flaggedMineCount == g.MineCount && g.flaggedCount == g.flaggedMineCount
 }
@@ -139,7 +140,7 @@ func (g *GameEngine) SetMines(safeTile types.Position) {
 
 	for ix := range MinePositions {
 		wg.Go(func() {
-			g.setTile(MinePositions[ix], types.ClosedMine)
+			g.setTile(MinePositions[ix], tiles.ClosedMine)
 		})
 	}
 	wg.Wait()
@@ -170,7 +171,7 @@ func (g *GameEngine) SetFieldSize(width uint16, height uint16) {
 	for x := range g.width {
 		field[x] = make([]types.Tile, g.height)
 		for y := range g.height {
-			field[x][y] = types.ClosedSafe
+			field[x][y] = tiles.ClosedSafe
 		}
 	}
 	g.field = field

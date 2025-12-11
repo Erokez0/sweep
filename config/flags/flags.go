@@ -1,6 +1,6 @@
 package Flags
 
-import "sweep/types"
+import ( types "sweep/shared/types" )
 
 const (
 	ASCII       types.Flag = "--ascii"

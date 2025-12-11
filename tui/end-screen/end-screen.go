@@ -5,10 +5,11 @@ import (
 	"os"
 	"time"
 
-	"sweep/shared/consts"
+	misc "sweep/shared/consts/misc"
+	tiles "sweep/shared/consts/tiles"
+	types "sweep/shared/types"
 	styles "sweep/tui/styles"
 	tilerenderer "sweep/tui/tile-renderer"
-	types "sweep/types"
 
 	tea "github.com/charmbracelet/bubbletea"
 )
@@ -26,7 +27,7 @@ func CreateModel(startTime time.Time, gameEngine types.IGameEngine) model {
 }
 
 func (m model) Init() tea.Cmd {
-	return tea.Batch(tea.SetWindowTitle(consts.APP_NAME), tea.ClearScreen)
+	return tea.Batch(tea.SetWindowTitle(misc.APP_NAME), tea.ClearScreen)
 }
 
 var _ tea.Model = model{}
@@ -64,7 +65,7 @@ func (m model) View() string {
 		var line string
 		for y := range field[x] {
 			tile := field[x][y]
-			if tile == types.OpenMine {
+			if tile == tiles.OpenMine {
 				win = false
 			}
 			content := fmt.Sprint(m.gameEngine.CountNeighbouringMines(types.Position{
@@ -92,7 +93,7 @@ func (m model) View() string {
 	timeSinceStart := time.Since(m.startTime)
 
 	beautifiedTime := beautifyTimeDuration(timeSinceStart)
-	tea.SetWindowTitle(fmt.Sprintf("%v - %v", consts.APP_NAME, beautifiedTime))
+	tea.SetWindowTitle(fmt.Sprintf("%v - %v", misc.APP_NAME, beautifiedTime))
 	s += fmt.Sprintf("time - %v", beautifiedTime)
 	return styles.TableStyle.Render(s)
 
