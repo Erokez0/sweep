@@ -14,14 +14,14 @@ func main() {
 		if conf.Height == 0 || conf.Mines == 0 || conf.Width == 0 {
 			startScreen := startscreen.CreateModel(conf)
 
-			if _, err := tea.NewProgram(startScreen).Run(); err != nil {
+			if _, err := tea.NewProgram(startScreen, tea.WithAltScreen()).Run(); err != nil {
 				panic(err)
 			}
 		}
 
 		gameModel := gametui.CreateModel(conf)
 
-		if _, err := tea.NewProgram(gameModel).Run(); err != nil {
+		if _, err := tea.NewProgram(gameModel, tea.WithAltScreen()).Run(); err != nil {
 			panic(err)
 		}
 
