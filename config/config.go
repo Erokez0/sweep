@@ -9,10 +9,10 @@ import (
 	"strconv"
 
 	flags "sweep/config/flags"
+	types "sweep/shared/types"
 	glyphs "sweep/shared/vars/glyphs"
 	"sweep/tui/styles"
 	themepreview "sweep/tui/theme-preview"
-	types "sweep/shared/types"
 
 	gojsonschema "github.com/xeipuuv/gojsonschema"
 )
@@ -30,19 +30,19 @@ func (c Color) isSet() bool {
 }
 
 type Colors struct {
-	Zero  Color `json:"0"`
-	One   Color `json:"1"`
-	Two   Color `json:"2"`
-	Three Color `json:"3"`
-	Four  Color `json:"4"`
-	Five  Color `json:"5"`
-	Six   Color `json:"6"`
-	Seven Color `json:"7"`
-	Eight Color `json:"8"`
-	Mine Color `json:"mine"`
-	Flag Color `json:"flag"`
+	Zero      Color `json:"0"`
+	One       Color `json:"1"`
+	Two       Color `json:"2"`
+	Three     Color `json:"3"`
+	Four      Color `json:"4"`
+	Five      Color `json:"5"`
+	Six       Color `json:"6"`
+	Seven     Color `json:"7"`
+	Eight     Color `json:"8"`
+	Mine      Color `json:"mine"`
+	Flag      Color `json:"flag"`
 	WrongFlag Color `json:"wrong flag"`
-	Empty Color `json:"empty"`
+	Empty     Color `json:"empty"`
 }
 
 type Action string
@@ -268,6 +268,7 @@ func LoadConfig(configPath string) (*Config, error) {
 			fmt.Printf("%v - %v", k, v)
 		}
 		os.Exit(1)
+		panic("it should have exited")
 	}
 
 	config.applyFlags()
@@ -279,7 +280,7 @@ func GetConfig() *Config {
 	config := new(Config)
 
 	var err error
-	config, err = LoadConfig("./config.json")
+	config, err = LoadConfig("/home/erokez/Desktop/code/sweep/config.json")
 	if err == nil {
 		return config
 	}
