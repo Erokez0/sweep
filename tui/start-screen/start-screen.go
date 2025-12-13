@@ -62,26 +62,33 @@ func CreateModel(config *config.Config) model {
 
 		input.Width = 5
 		input.CharLimit = 5
+		input.Placeholder = "0"
 		switch i {
 		case 0:
 			input.Focus()
 			input.PromptStyle = styles.BrightText
 			input.TextStyle = styles.BrightText
 
-			input.Placeholder = width
 			input.Prompt = "field width "
+			if width != "0" {
+				input.SetValue(width)
+			}
 		case 1:
 			input.PromptStyle = styles.DimText
 			input.TextStyle = styles.DimText
 
-			input.Placeholder = height
 			input.Prompt = "field height "
+			if height != "0" {
+				input.SetValue(height)
+			}
 		case 2:
 			input.PromptStyle = styles.DimText
 			input.TextStyle = styles.DimText
 
-			input.Placeholder = mines
 			input.Prompt = "amount of mines "
+			if mines != "0" {
+				input.SetValue(mines)
+			}
 		}
 		m.inputs[i] = input
 	}

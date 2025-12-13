@@ -47,27 +47,6 @@
         ]
       }
     },
-    "defaults": {
-      "type": "object",
-      "required": [
-        "width",
-        "mines"
-      ],
-      "properties": {
-        "width": {
-          "$ref": "#/definitions/uint16",
-          "description": "The width of the field in tiles"
-        },
-        "height": {
-          "$ref": "#/definitions/uint16",
-          "description": "The height of the field in tiles"
-        },
-        "mines": {
-          "minimum": 1,
-          "$ref": "#/definitions/uint16"
-        }
-      }
-    },
     "colors": {
       "description": "each property descibes a color for each type",
       "type": "object",
