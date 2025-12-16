@@ -118,6 +118,21 @@
           "$ref": "#/definitions/keys"
         }
       }
+    },
+    "mines":{
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 65535
+    },
+    "width":{
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 65535
+    },
+    "height":{
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 65535
     }
   }
 }
