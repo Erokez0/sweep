@@ -233,7 +233,7 @@ func (c *Config) applyFlags() {
 
 			WrongFlagStyle := styles.TileStyles[glyphs.WRONG_FLAG]
 			delete(styles.TileStyles, glyphs.WRONG_FLAG)
-			glyphs.MINE = "W"
+			glyphs.WRONG_FLAG = "W"
 			styles.TileStyles[glyphs.WRONG_FLAG] = WrongFlagStyle
 
 		case flags.FILL, flags.FILL_SHORT:
