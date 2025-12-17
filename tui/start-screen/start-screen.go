@@ -32,8 +32,8 @@ type model struct {
 var _ tea.Model = model{}
 
 func (m model) validateNumber(s string) error {
-	_, error := strconv.ParseInt(s, 10, 64)
-	if error == nil {
+	_, err := strconv.ParseInt(s, 10, 64)
+	if err == nil {
 		return nil
 	}
 	return errors.New("should be an integer")
@@ -97,7 +97,7 @@ func CreateModel(config *config.Config) model {
 
 func (m model) Init() tea.Cmd {
 	m.validateInputs()
-	return tea.Batch(tea.SetWindowTitle(misc.APP_NAME), tea.ClearScreen)
+	return tea.SetWindowTitle(misc.APP_NAME)
 }
 
 func (m *model) validateInputs() {
