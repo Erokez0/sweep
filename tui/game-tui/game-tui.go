@@ -60,7 +60,7 @@ func CreateModel(config *config.Config) model {
 }
 
 func (m model) Init() tea.Cmd {
-	return tea.Batch(tea.SetWindowTitle(misc.APP_NAME), tea.ClearScreen)
+	return tea.SetWindowTitle(misc.APP_NAME)
 }
 
 var _ tea.Model = model{}
@@ -179,21 +179,25 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				m.cursorPosition.X++
 			}
 		}
+
 		if m.config.Bindings.IsMoveCursorUp(msgString) {
 			if m.cursorPosition.X > 0 {
 				m.cursorPosition.X--
 			}
 		}
+
 		if m.config.Bindings.IsMoveCursorLeft(msgString) {
 			if m.cursorPosition.Y > 0 {
 				m.cursorPosition.Y--
 			}
 		}
+
 		if m.config.Bindings.IsMoveCursorRight(msgString) {
 			if m.cursorPosition.Y < uint16(m.gameEngine.GetHeight())-1 {
 				m.cursorPosition.Y++
 			}
 		}
+
 		if m.config.Bindings.IsOpenTile(msgString) {
 			if m.moves == 0 {
 				m.gameEngine.SetMines(m.cursorPosition)
@@ -201,6 +205,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			m.moves++
 			m.openTile(m.cursorPosition)
 		}
+
 		if m.config.Bindings.IsFlagTile(msgString) {
 			if m.moves == 0 {
 				break
@@ -220,6 +225,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				m.flags--
 			}
 		}
+
 	}
 
 	return m, nil
