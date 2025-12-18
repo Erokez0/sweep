@@ -1,27 +1,30 @@
 package themepreview
 
 import (
-	glyphs "sweep/shared/vars/glyphs"
+	tilecontent "sweep/shared/consts/tile-content"
 
 	tilerenderer "sweep/tui/tile-renderer"
 )
 
 func RenderThemePreview() string {
-	allTiles := [][]string{
+	allTiles := [][]tilecontent.TileContent{
 		{
-			"0", "1",
+			tilecontent.Zero, tilecontent.One,
 		},
 		{
-			"2", "3",
+			tilecontent.Two, tilecontent.Three,
 		},
 		{
-			"4", "5",
+			tilecontent.Four, tilecontent.Five,
 		},
 		{
-			"6", "7",
+			tilecontent.Six, tilecontent.Seven,
 		},
 		{
-			glyphs.MINE, glyphs.FLAG,
+			tilecontent.Eight, tilecontent.Flag,
+		},
+		{
+			tilecontent.WrongFlag, tilecontent.Mine,
 		},
 	}
 

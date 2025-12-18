@@ -17,8 +17,8 @@ import (
 )
 
 var (
-	focusedButton = styles.Seven.Render("[ Submit ]")
-	blurredButton = fmt.Sprintf("[ %s ]", styles.Zero.Render("Submit"))
+	focusedButton = styles.BrightText.Render("[ Submit ]")
+	blurredButton = fmt.Sprintf("[ %s ]", styles.DimText.Render("Submit"))
 )
 
 type model struct {
@@ -51,7 +51,7 @@ func CreateModel(config *config.Config) model {
 
 	var input textinput.Model
 	for i := range m.inputs {
-		input.Cursor.Style = styles.Seven
+		input.Cursor.Style = styles.BrightText
 		input = textinput.New()
 		input.Validate = m.validateNumber
 		input.Cursor = cursor.New()

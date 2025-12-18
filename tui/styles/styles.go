@@ -1,7 +1,7 @@
 package styles
 
 import (
-	"sweep/shared/vars/glyphs"
+	tilecontent "sweep/shared/consts/tile-content"
 
 	lipgloss "github.com/charmbracelet/lipgloss"
 )
@@ -30,41 +30,43 @@ var (
 	}
 
 	isFill = false
+	isCursorStyleSet = false
 
-	DimText    = Zero
-	BrightText = Seven
+	DimText    = zeroStyle
+	BrightText = sevenStyle
 
 	BorderTop    = NoStyle.Border(lipgloss.RoundedBorder(), true, false, false, false)
 	BorderBottom = NoStyle.Border(lipgloss.RoundedBorder(), false, false, true, false)
 
-	ZeroColor  = "8"
-	OneColor   = "12"
-	TwoColor   = "10"
-	ThreeColor = "3"
-	FourColor  = "9"
-	FiveColor  = "13"
-	SixColor   = "5"
-	SevenColor = "1"
-	EightColor = "14"
-	FlagColor = "15"
-	WrongFlagColor = "15"
-	MineColor = "15"
-	EmptyColor = "15"
+	ZeroColor      string = "8"
+	OneColor       string = "12"
+	TwoColor       string = "10"
+	ThreeColor     string = "3"
+	FourColor      string = "9"
+	FiveColor      string = "13"
+	SixColor       string = "5"
+	SevenColor     string = "1"
+	EightColor     string = "14"
+	FlagColor      string = "15"
+	WrongFlagColor string = "15"
+	MineColor      string = "15"
+	EmptyColor     string = "15"
+	CursorColor    string
 
-	Zero  TileStyle = tileStyle.Foreground(lipgloss.Color(ZeroColor))
-	One   TileStyle = tileStyle.Foreground(lipgloss.Color(OneColor))
-	Two   TileStyle = tileStyle.Foreground(lipgloss.Color(TwoColor))
-	Three TileStyle = tileStyle.Foreground(lipgloss.Color(ThreeColor))
-	Four  TileStyle = tileStyle.Foreground(lipgloss.Color(FourColor))
-	Five  TileStyle = tileStyle.Foreground(lipgloss.Color(FiveColor))
-	Six   TileStyle = tileStyle.Foreground(lipgloss.Color(SixColor))
-	Seven TileStyle = tileStyle.Foreground(lipgloss.Color(SevenColor))
-	Eight TileStyle = tileStyle.Foreground(lipgloss.Color(EightColor))
-	Flag TileStyle = tileStyle.Foreground(lipgloss.Color(EightColor))
-	WrongFlag TileStyle = tileStyle.Foreground(lipgloss.Color(EightColor))
-	Mine TileStyle = tileStyle.Foreground(lipgloss.Color(EightColor))
-	Empty TileStyle = tileStyle.Foreground(lipgloss.Color(EightColor))
-
+	zeroStyle      TileStyle = tileStyle.Foreground(lipgloss.Color(ZeroColor))
+	oneStyle       TileStyle = tileStyle.Foreground(lipgloss.Color(OneColor))
+	twoStyle       TileStyle = tileStyle.Foreground(lipgloss.Color(TwoColor))
+	threeStyle     TileStyle = tileStyle.Foreground(lipgloss.Color(ThreeColor))
+	fourStyle      TileStyle = tileStyle.Foreground(lipgloss.Color(FourColor))
+	fiveStyle      TileStyle = tileStyle.Foreground(lipgloss.Color(FiveColor))
+	sixStyle       TileStyle = tileStyle.Foreground(lipgloss.Color(SixColor))
+	sevenStyle     TileStyle = tileStyle.Foreground(lipgloss.Color(SevenColor))
+	eightStyle     TileStyle = tileStyle.Foreground(lipgloss.Color(EightColor))
+	flagStyle      TileStyle = tileStyle.Foreground(lipgloss.Color(EightColor))
+	wrongFlagStyle TileStyle = tileStyle.Foreground(lipgloss.Color(EightColor))
+	mineStyle      TileStyle = tileStyle.Foreground(lipgloss.Color(EightColor))
+	emptyStyle     TileStyle = tileStyle.Foreground(lipgloss.Color(EightColor))
+	cursorStyle    TileStyle = tileStyle
 )
 
 func SetFill(fill bool) {
@@ -74,67 +76,39 @@ func SetFill(fill bool) {
 	isFill = fill
 }
 
-func SetColor(key, value string) {
-	switch key {
-	case "0":
-		ZeroColor = value
-		Zero = createTileStyle(value)
-	case "1":
-		OneColor = value
-		One = createTileStyle(value)
-	case "2":
-		TwoColor = value
-		Two = createTileStyle(value)
-	case "3":
-		ThreeColor = value
-		Three = createTileStyle(value)
-	case "4":
-		FourColor = value
-		Four = createTileStyle(value)
-	case "5":
-		FiveColor = value
-		Five = createTileStyle(value)
-	case "6":
-		SixColor = value
-		Six = createTileStyle(value)
-	case "7":
-		SevenColor = value
-		Seven = createTileStyle(value)
-	case "8":
-		EightColor = value
-		Eight = createTileStyle(value)
-	case "mine":
-		MineColor = value
-		Mine = createTileStyle(value)
-	case "flag":
-		FlagColor = value
-		Flag = createTileStyle(value)
-	case "wrong flag":
-		WrongFlagColor = value
-		WrongFlag = createTileStyle(value)
-	case "empty":
-		EmptyColor = value
-		Empty = createTileStyle(value)
-	default:
-		return
+func SetCursorColor(color string) {
+	isCursorStyleSet = true
+	CursorColor = color
+	cursorStyle = tileStyle.Foreground(lipgloss.Color(CursorColor))
+}
+
+func RenderCursor(tileStyle *TileStyle, cursor string) string {
+	if !isCursorStyleSet {
+		return tileStyle.Render(cursor)
 	}
+	return cursorStyle.Background(tileStyle.GetBackground()).Render(cursor)
+}
+
+func SetTileColor(key tilecontent.TileContent, color string) {
+	newStyle := createTileStyle(color)
+	TileStyles[key] = &newStyle
 }
 
 type TileStyle = lipgloss.Style
 
-var TileStyles = map[string]*lipgloss.Style{
-	"0": &Zero,
-	"1": &One,
-	"2": &Two,
-	"3": &Three,
-	"4": &Four,
-	"5": &Five,
-	"6": &Six,
-	"7": &Seven,
-	"8": &Eight,
+var TileStyles = map[tilecontent.TileContent]*lipgloss.Style{
+	tilecontent.Zero:  &zeroStyle,
+	tilecontent.One:   &oneStyle,
+	tilecontent.Two:   &twoStyle,
+	tilecontent.Three: &threeStyle,
+	tilecontent.Four:  &fourStyle,
+	tilecontent.Five:  &fiveStyle,
+	tilecontent.Six:   &sixStyle,
+	tilecontent.Seven: &sevenStyle,
+	tilecontent.Eight: &eightStyle,
 
-	glyphs.FLAG: &Flag,
-	glyphs.WRONG_FLAG: &WrongFlag,
-	glyphs.MINE: &Mine,
-	glyphs.EMPTY: &Empty,
+	tilecontent.Flag:      &flagStyle,
+	tilecontent.WrongFlag: &wrongFlagStyle,
+	tilecontent.Mine:      &mineStyle,
+	tilecontent.Empty:     &emptyStyle,
 }

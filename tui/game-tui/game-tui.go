@@ -3,17 +3,15 @@ package gametui
 import (
 	"fmt"
 	"os"
-	"slices"
-	"strconv"
 	"sync"
 	"time"
 
 	config "sweep/config"
 	gameengine "sweep/game-engine"
 	misc "sweep/shared/consts/misc"
+	tilecontent "sweep/shared/consts/tile-content"
 	tiles "sweep/shared/consts/tiles"
 	types "sweep/shared/types"
-	glyphs "sweep/shared/vars/glyphs"
 	endscreen "sweep/tui/end-screen"
 	styles "sweep/tui/styles"
 	tilerenderer "sweep/tui/tile-renderer"
@@ -25,8 +23,7 @@ type model struct {
 	config          config.Config
 	cursorPosition  types.Position
 	gameEngine      types.IGameEngine
-	tiles           [][]string
-	flaggedContents [][]string
+	tiles           [][]tilecontent.TileContent
 	startTime       time.Time
 	moves           int16
 	flags           int16
@@ -37,11 +34,11 @@ func CreateModel(config *config.Config) model {
 	gameEngine.SetMineCount(config.Mines)
 	gameEngine.SetFieldSize(config.Width, config.Height)
 
-	tiles := make([][]string, config.Width)
+	tiles := make([][]tilecontent.TileContent, config.Width)
 	for x := range config.Width {
-		tiles[x] = make([]string, config.Height)
+		tiles[x] = make([]tilecontent.TileContent, config.Height)
 		for y := range config.Height {
-			tiles[x][y] = glyphs.EMPTY
+			tiles[x][y] = tilecontent.Empty
 		}
 	}
 
@@ -52,7 +49,6 @@ func CreateModel(config *config.Config) model {
 		},
 		gameEngine:      &gameEngine,
 		tiles:           tiles,
-		flaggedContents: slices.Clone(tiles),
 		startTime:       time.Now(),
 		moves:           0,
 		config:          *config,
@@ -85,7 +81,7 @@ func (m model) openTile(position types.Position) {
 	}
 
 	count := m.gameEngine.CountNeighbouringMines(position)
-	m.tiles[x][y] = strconv.Itoa(int(count))
+	m.tiles[x][y] = tilecontent.FromNumber(count)
 
 	if count == 0 {
 		m.openSafeAroundTile(position)
@@ -148,7 +144,7 @@ func (m model) openAroundOpenTile(position types.Position) {
 			}
 
 			count := m.gameEngine.CountNeighbouringMines(position)
-			m.tiles[x][y] = strconv.Itoa(int(count))
+			m.tiles[x][y] = tilecontent.FromNumber(count)
 			if count == 0 {
 				m.openSafeAroundTile(position)
 			}
@@ -215,13 +211,11 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			x, y := m.cursorPosition.GetCoords()
 			m.gameEngine.FlagToggleTile(m.cursorPosition)
 			switch m.tiles[x][y] {
-			case glyphs.EMPTY:
-				m.flaggedContents[x][y] = m.tiles[x][y]
-				m.tiles[x][y] = glyphs.FLAG
+			case tilecontent.Empty:
+				m.tiles[x][y] = tilecontent.Flag
 				m.flags++
-			case glyphs.FLAG:
-				m.tiles[x][y] = m.flaggedContents[x][y]
-				m.flaggedContents[x][y] = glyphs.EMPTY
+			case tilecontent.Flag:
+				m.tiles[x][y] = tilecontent.Empty
 				m.flags--
 			}
 		}

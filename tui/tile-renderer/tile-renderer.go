@@ -3,39 +3,43 @@ package tilerenderer
 import (
 	"fmt"
 
+	tilecontent "sweep/shared/consts/tile-content"
 	tiles "sweep/shared/consts/tiles"
 	types "sweep/shared/types"
 	glyphs "sweep/shared/vars/glyphs"
 	styles "sweep/tui/styles"
 )
 
-func RenderTileByContent(tileContent string, isFocused bool) string {
-	template := " %v "
+func RenderTileByContent(tileContent tilecontent.TileContent, isFocused bool) string {
+	stringTileContent := tileContent.String()
 
-	style, ok := styles.TileStyles[tileContent]
-	if isFocused {
-		template = "[%v]"
-	}
-	switch tileContent {
+	style := styles.TileStyles[tileContent]
+	template := style.Render("%v%v%v")
+
+	switch stringTileContent {
 	case "0":
-		tileContent = "x"
+		stringTileContent = "x"
 	}
-	if ok {
-		template = style.Render(template)
-	}
-	return fmt.Sprintf(template, tileContent)
+	stringTileContent = style.Render(stringTileContent)
 
+	leftCursosHalf := style.Render(" ")
+	rightCursorHalf := leftCursosHalf
+	if isFocused {
+		leftCursosHalf = styles.RenderCursor(style, glyphs.CursorLeftHalf)
+		rightCursorHalf = styles.RenderCursor(style, glyphs.CursorRightHalf)
+	}
+
+	return fmt.Sprintf(template, leftCursosHalf, stringTileContent, rightCursorHalf)
 }
 
-func RenderTileByType(tile types.Tile, content string) string {
+func RenderTileByType(tile types.Tile, tileContent tilecontent.TileContent) string {
 	switch tile {
 	case tiles.ClosedMine, tiles.OpenMine:
-		content = glyphs.MINE
+		tileContent = tilecontent.Mine
 	case tiles.FlaggedMine:
-		content = glyphs.FLAG
+		tileContent = tilecontent.Flag
 	case tiles.FlaggedSafe:
-		content = glyphs.WRONG_FLAG
+		tileContent = tilecontent.WrongFlag
 	}
-
-	return RenderTileByContent(content, false)
+	return RenderTileByContent(tileContent, false)
 }

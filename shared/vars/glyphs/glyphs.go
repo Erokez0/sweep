@@ -5,4 +5,6 @@ var (
 	FLAG       = "󰈻"
 	MINE       = "󰚑"
 	EMPTY      = " "
+	CursorLeftHalf = "["
+	CursorRightHalf = "]"
 )

@@ -6,6 +6,7 @@ import (
 	"time"
 
 	misc "sweep/shared/consts/misc"
+	tilecontent "sweep/shared/consts/tile-content"
 	tiles "sweep/shared/consts/tiles"
 	types "sweep/shared/types"
 	styles "sweep/tui/styles"
@@ -68,11 +69,11 @@ func (m model) View() string {
 			if tile == tiles.OpenMine {
 				win = false
 			}
-			content := fmt.Sprint(m.gameEngine.CountNeighbouringMines(types.Position{
+			count := m.gameEngine.CountNeighbouringMines(types.Position{
 				X: uint16(x),
 				Y: uint16(y),
-			}))
-			line += tilerenderer.RenderTileByType(tile, content)
+			})
+			line += tilerenderer.RenderTileByType(tile, tilecontent.FromNumber(count))
 		}
 		lines += "\n"
 		if x == 0 {

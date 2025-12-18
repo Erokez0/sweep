@@ -9,9 +9,10 @@ import (
 	"strconv"
 
 	flags "sweep/config/flags"
+	tilecontent "sweep/shared/consts/tile-content"
 	types "sweep/shared/types"
 	glyphs "sweep/shared/vars/glyphs"
-	"sweep/tui/styles"
+	styles "sweep/tui/styles"
 	themepreview "sweep/tui/theme-preview"
 
 	gojsonschema "github.com/xeipuuv/gojsonschema"
@@ -84,6 +85,12 @@ func (b *Bindings) IsFlagTile(str string) bool {
 	return slices.Contains(b.FlagTile, str)
 }
 
+type Cursor struct {
+	Color     Color  `json:"color"`
+	LeftHalf  string `json:"left half"`
+	RightHalf string `json:"right half"`
+}
+
 type Config struct {
 	Flags    []types.Flag `json:"flags"`
 	Defaults Defaults     `json:"defaults"`
@@ -93,6 +100,8 @@ type Config struct {
 	Mines  uint16 `json:"mines,omitempty"`
 	Width  uint16 `json:"width,omitempty"`
 	Height uint16 `json:"height,omitempty"`
+
+	Cursor Cursor `json:"cursor"`
 }
 
 func (config *Config) applyColors() {
@@ -100,44 +109,45 @@ func (config *Config) applyColors() {
 		return
 	}
 	if config.Colors.Zero.isSet() {
-		styles.SetColor("0", string(config.Colors.Zero))
+		styles.SetTileColor(tilecontent.Zero, string(config.Colors.Zero))
 	}
+
 	if config.Colors.One.isSet() {
-		styles.SetColor("1", string(config.Colors.One))
+		styles.SetTileColor(tilecontent.One, string(config.Colors.One))
 	}
 	if config.Colors.Two.isSet() {
-		styles.SetColor("2", string(config.Colors.Two))
+		styles.SetTileColor(tilecontent.Two, string(config.Colors.Two))
 	}
 	if config.Colors.Three.isSet() {
-		styles.SetColor("3", string(config.Colors.Three))
+		styles.SetTileColor(tilecontent.Three, string(config.Colors.Three))
 	}
 	if config.Colors.Four.isSet() {
-		styles.SetColor("4", string(config.Colors.Four))
+		styles.SetTileColor(tilecontent.Four, string(config.Colors.Four))
 	}
 	if config.Colors.Five.isSet() {
-		styles.SetColor("5", string(config.Colors.Five))
+		styles.SetTileColor(tilecontent.Five, string(config.Colors.Five))
 	}
 	if config.Colors.Six.isSet() {
-		styles.SetColor("6", string(config.Colors.Six))
+		styles.SetTileColor(tilecontent.Six, string(config.Colors.Six))
 	}
 	if config.Colors.Seven.isSet() {
-		styles.SetColor("7", string(config.Colors.Seven))
+		styles.SetTileColor(tilecontent.Seven, string(config.Colors.Seven))
 	}
 	if config.Colors.Eight.isSet() {
-		styles.SetColor("8", string(config.Colors.Eight))
+		styles.SetTileColor(tilecontent.Eight, string(config.Colors.Eight))
 	}
 
 	if config.Colors.Mine.isSet() {
-		styles.SetColor("mine", string(config.Colors.Mine))
+		styles.SetTileColor(tilecontent.Mine, string(config.Colors.Mine))
 	}
 	if config.Colors.Flag.isSet() {
-		styles.SetColor("flag", string(config.Colors.Flag))
+		styles.SetTileColor(tilecontent.Flag, string(config.Colors.Flag))
 	}
 	if config.Colors.WrongFlag.isSet() {
-		styles.SetColor("wrong flag", string(config.Colors.WrongFlag))
+		styles.SetTileColor(tilecontent.WrongFlag, string(config.Colors.WrongFlag))
 	}
 	if config.Colors.Empty.isSet() {
-		styles.SetColor("empty", string(config.Colors.Empty))
+		styles.SetTileColor(tilecontent.Empty, string(config.Colors.Empty))
 	}
 }
 
@@ -221,20 +231,11 @@ func (c *Config) applyFlags() {
 			}
 
 		case flags.ASCII, flags.ASCII_SHORT:
-			mineStyle := styles.TileStyles[glyphs.MINE]
-			delete(styles.TileStyles, glyphs.MINE)
 			glyphs.MINE = "M"
-			styles.TileStyles[glyphs.MINE] = mineStyle
 
-			flagStyle := styles.TileStyles[glyphs.FLAG]
-			delete(styles.TileStyles, glyphs.FLAG)
 			glyphs.FLAG = "F"
-			styles.TileStyles[glyphs.FLAG] = flagStyle
 
-			WrongFlagStyle := styles.TileStyles[glyphs.WRONG_FLAG]
-			delete(styles.TileStyles, glyphs.WRONG_FLAG)
 			glyphs.WRONG_FLAG = "W"
-			styles.TileStyles[glyphs.WRONG_FLAG] = WrongFlagStyle
 
 		case flags.FILL, flags.FILL_SHORT:
 			styles.SetFill(true)
@@ -245,6 +246,18 @@ func (c *Config) applyFlags() {
 		c.applyColors()
 		print(themepreview.RenderThemePreview())
 		os.Exit(0)
+	}
+}
+
+func (config *Config) applyCursorStyle() {
+	if config.Cursor.Color.isSet() {
+		styles.SetCursorColor(string(config.Cursor.Color))
+	}
+	if config.Cursor.LeftHalf != "" {
+		glyphs.CursorLeftHalf = config.Cursor.LeftHalf
+	}
+	if config.Cursor.RightHalf != "" {
+		glyphs.CursorRightHalf = config.Cursor.RightHalf
 	}
 }
 
@@ -273,6 +286,8 @@ func LoadConfig(configPath string) (*Config, error) {
 
 	config.applyFlags()
 	config.applyColors()
+	config.applyCursorStyle()
+
 	return config, nil
 }
 
