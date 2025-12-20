@@ -22,14 +22,14 @@ func RenderTileByContent(tileContent tilecontent.TileContent, isFocused bool) st
 	}
 	stringTileContent = style.Render(stringTileContent)
 
-	leftCursosHalf := style.Render(" ")
-	rightCursorHalf := leftCursosHalf
+	leftCursorHalf := style.Render(" ")
+	rightCursorHalf := leftCursorHalf
 	if isFocused {
-		leftCursosHalf = styles.RenderCursor(style, glyphs.CursorLeftHalf)
+		leftCursorHalf = styles.RenderCursor(style, glyphs.CursorLeftHalf)
 		rightCursorHalf = styles.RenderCursor(style, glyphs.CursorRightHalf)
 	}
 
-	return fmt.Sprintf(template, leftCursosHalf, stringTileContent, rightCursorHalf)
+	return fmt.Sprintf(template, leftCursorHalf, stringTileContent, rightCursorHalf)
 }
 
 func RenderTileByType(tile types.Tile, tileContent tilecontent.TileContent) string {
