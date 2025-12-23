@@ -86,7 +86,9 @@ func RenderCursor(tileStyle *TileStyle, cursor string) string {
 	if !isCursorStyleSet {
 		return tileStyle.Render(cursor)
 	}
-	return cursorStyle.Background(tileStyle.GetBackground()).Render(cursor)
+	return cursorStyle.
+		Background(tileStyle.GetBackground()).
+		Render(cursor)
 }
 
 func SetTileColor(key tilecontent.TileContent, color string) {
