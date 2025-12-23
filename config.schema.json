@@ -28,131 +28,159 @@
       ]
     }
   },
-  "type": "object",
-  "properties": {
-    "flags": {
-      "type": "array",
-      "uniqueItems": true,
-      "items": {
-        "enum": [
-          "--ascii",
-          "--preview",
-          "--config-path",
-          "--fill",
-          "--A",
-          "--P",
-          "--C",
-          "--F"
-        ]
-      }
-    },
-    "colors": {
-      "description": "each property descibes a color for each type",
+  "anyOf": [
+    {},
+    {
       "type": "object",
       "properties": {
-        "0": {
-          "$ref": "#/definitions/color"
+        "flags": {
+          "type": "array",
+          "uniqueItems": true,
+          "minItems": 0,
+          "items": {
+            "enum": [
+              "--ascii",
+              "--preview",
+              "--config-path",
+              "--fill",
+              "--A",
+              "--P",
+              "--C",
+              "--F"
+            ]
+          }
         },
-        "1": {
-          "$ref": "#/definitions/color"
+        "colors": {
+          "description": "each property describes a color for each type",
+          "type": "object",
+          "minProperties": 0,
+          "properties": {
+            "0": {
+              "$ref": "#/definitions/color"
+            },
+            "1": {
+              "$ref": "#/definitions/color"
+            },
+            "2": {
+              "$ref": "#/definitions/color"
+            },
+            "3": {
+              "$ref": "#/definitions/color"
+            },
+            "4": {
+              "$ref": "#/definitions/color"
+            },
+            "5": {
+              "$ref": "#/definitions/color"
+            },
+            "6": {
+              "$ref": "#/definitions/color"
+            },
+            "7": {
+              "$ref": "#/definitions/color"
+            },
+            "8": {
+              "$ref": "#/definitions/color"
+            },
+            "mine": {
+              "$ref": "#/definitions/color"
+            },
+            "empty": {
+              "$ref": "#/definitions/color"
+            },
+            "flag": {
+              "$ref": "#/definitions/color"
+            },
+            "wrong flag": {
+              "$ref": "#/definitions/color"
+            },
+            "cursor": {
+              "$ref": "#/definitions/color"
+            }
+          }
         },
-        "2": {
-          "$ref": "#/definitions/color"
+        "bindings": {
+          "type": "object",
+          "minProperties": 0,
+          "properties": {
+            "moveCursorUp": {
+              "$ref": "#/definitions/keys"
+            },
+            "moveCursorDown": {
+              "$ref": "#/definitions/keys"
+            },
+            "moveCursorLeft": {
+              "$ref": "#/definitions/keys"
+            },
+            "moveCursorRight": {
+              "$ref": "#/definitions/keys"
+            },
+            "openTile": {
+              "$ref": "#/definitions/keys"
+            },
+            "flagTile": {
+              "$ref": "#/definitions/keys"
+            },
+            "submit": {
+              "$ref": "#/definitions/keys"
+            }
+          }
         },
-        "3": {
-          "$ref": "#/definitions/color"
+        "defaults": {
+          "type": "object",
+          "properties": {
+            "mines": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 65535
+            },
+            "width": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 65535
+            },
+            "height": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 65535
+            }
+          }
         },
-        "4": {
-          "$ref": "#/definitions/color"
+        "mines": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 65535
         },
-        "5": {
-          "$ref": "#/definitions/color"
+        "width": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 65535
         },
-        "6": {
-          "$ref": "#/definitions/color"
-        },
-        "7": {
-          "$ref": "#/definitions/color"
-        },
-        "8": {
-          "$ref": "#/definitions/color"
-        },
-        "mine": {
-          "$ref": "#/definitions/color"
-        },
-        "empty": {
-          "$ref": "#/definitions/color"
-        },
-        "flag": {
-          "$ref": "#/definitions/color"
-        },
-        "wrong flag": {
-          "$ref": "#/definitions/color"
+        "height": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 65535
         },
         "cursor": {
-          "$ref": "#/definitions/color"
-        }
-      }
-    },
-    "bindings": {
-      "type": "object",
-      "uniqueItems": true,
-      "properties": {
-        "moveCursorUp": {
-          "$ref": "#/definitions/keys"
-        },
-        "moveCursorDown": {
-          "$ref": "#/definitions/keys"
-        },
-        "moveCursorLeft": {
-          "$ref": "#/definitions/keys"
-        },
-        "moveCursorRight": {
-          "$ref": "#/definitions/keys"
-        },
-        "openTile": {
-          "$ref": "#/definitions/keys"
-        },
-        "flagTile": {
-          "$ref": "#/definitions/keys"
-        },
-        "submit": {
-          "$ref": "#/definitions/keys"
-        }
-      }
-    },
-    "mines": {
-      "type": "integer",
-      "minimum": 1,
-      "maximum": 65535
-    },
-    "width": {
-      "type": "integer",
-      "minimum": 1,
-      "maximum": 65535
-    },
-    "height": {
-      "type": "integer",
-      "minimum": 1,
-      "maximum": 65535
-    },
-    "cursor": {
-      "type": "object",
-      "properties": {
-        "left half":{
-          "type": "string",
-          "maxLength": 1,
-          "minLength": 0
-        },
-        "right half":{
-          "type": "string",
-          "maxLength": 1,
-          "minLength": 0
-        },
-        "color": {
-          "$ref": "#/definitions/color"
+          "type": "object",
+          "minProperties": 0,
+          "properties": {
+            "left half": {
+              "type": "string",
+              "maxLength": 1,
+              "minLength": 0
+            },
+            "right half": {
+              "type": "string",
+              "maxLength": 1,
+              "minLength": 0
+            },
+            "color": {
+              "$ref": "#/definitions/color"
+            }
+          }
         }
       }
     }
-  }
+  ]
 }
