@@ -105,7 +105,7 @@ func (m *model) validateInputs() {
 	m.isValid = true
 	for ix, input := range m.inputs {
 		if input.Value() == "" {
-			m.messages[ix] = append(m.messages[ix], fmt.Sprintf("%vmust not be empty", input.Prompt))
+			m.messages[ix] = append(m.messages[ix], fmt.Sprintf("%vmust not be empty\n", input.Prompt))
 			m.isValid = false
 		}
 		if input.Err != nil {
@@ -234,14 +234,10 @@ func (m model) View() string {
 
 	for i := range m.inputs {
 		b.WriteString(m.inputs[i].View())
-		isNotLast := i != len(m.inputs)
-		if isNotLast {
-			b.WriteRune('\n')
-		}
+		b.WriteRune('\n')
 		if len(m.messages[i]) > 0 {
-			b.WriteString(styles.BrightText.Faint(true).Render(m.messages[i][0]))
-		}
-		if isNotLast {
+			b.WriteString(styles.BrightText.Faint(true).Render(m.messages[i][0]) + "\r")
+		}  else {
 			b.WriteRune('\n')
 		}
 	}
