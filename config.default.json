@@ -1,6 +1,5 @@
 {
   "$schema": "./config.schema.json",
-    
   "colors": {
     "0": "8",
     "1": "12",
@@ -10,33 +9,47 @@
     "5": "13",
     "6": "5",
     "7": "1",
-    "8": "14"
+    "8": "14",
+    "mine": "9",
+    "wrong flag": "9",
+    "flag": "15",
+    "empty": null
+  },
+
+  "defaults": {
+    "mines": null,
+    "width": null,
+    "height": null
   },
 
   "bindings": {
     "flagTile": [
-        "x",
-        "\\"
+      "x",
+      "\\"
     ],
     "openTile": [
-        "z",
-        "enter"
+      "z",
+      "enter"
     ],
     "moveCursorDown": [
-        "j",
-        "s"
+      "j",
+      "s"
     ],
     "moveCursorUp": [
-        "k",
-        "w"
+      "k",
+      "w"
     ],
     "moveCursorRight": [
-        "l",
-        "d"
+      "l",
+      "d"
     ],
     "moveCursorLeft": [
-        "h",
-        "a"
+      "h",
+      "a"
     ]
+  },
+  "cursor": {
+    "left half": "[",
+    "right half": "]"
   }
 }

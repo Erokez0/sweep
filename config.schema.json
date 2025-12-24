@@ -1,11 +1,10 @@
 {
   "$schema": "http://json-schema.org/draft-04/schema#",
-  "$id": "sweep.config.schema",
   "definitions": {
     "color": {
       "type": "string",
       "description": "an ANSI color or an RGB color in hex representation",
-      "pattern": "^(#[A-Za-z0-9]{2,6})|([0|1[0-6]?)$"
+      "pattern": "^(#([A-Fa-f0-9]{2,6}|[A-Fa-f0-9]{6})|(25[0-5]|2[0-4][0-9]|1[0-9]{2}|[1-9][0-9]|[0-9]))$"
     },
     "uint16": {
       "type": "integer",
@@ -93,9 +92,6 @@
             },
             "wrong flag": {
               "$ref": "#/definitions/color"
-            },
-            "cursor": {
-              "$ref": "#/definitions/color"
             }
           }
         },
@@ -119,9 +115,6 @@
               "$ref": "#/definitions/keys"
             },
             "flagTile": {
-              "$ref": "#/definitions/keys"
-            },
-            "submit": {
               "$ref": "#/definitions/keys"
             }
           }
