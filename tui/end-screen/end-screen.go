@@ -72,8 +72,12 @@ func (m model) View() string {
 			count := m.gameEngine.CountNeighbouringMines(types.Position{
 				X: uint16(x),
 				Y: uint16(y),
-			})
-			line += tilerenderer.RenderTileByType(tile, tilecontent.FromNumber(count))
+			})	
+			tileContent, err := tilecontent.FromNumber(count)
+			if err != nil {
+				panic(err)
+			}
+			line += tilerenderer.RenderTileByType(tile, tileContent)
 		}
 		lines += "\n"
 		if x == 0 {
