@@ -99,22 +99,22 @@
           "type": "object",
           "minProperties": 0,
           "properties": {
-            "moveCursorUp": {
+            "move cursor up": {
               "$ref": "#/definitions/keys"
             },
-            "moveCursorDown": {
+            "move cursor down": {
               "$ref": "#/definitions/keys"
             },
-            "moveCursorLeft": {
+            "move cursor left": {
               "$ref": "#/definitions/keys"
             },
-            "moveCursorRight": {
+            "move cursor right": {
               "$ref": "#/definitions/keys"
             },
-            "openTile": {
+            "open tile": {
               "$ref": "#/definitions/keys"
             },
-            "flagTile": {
+            "flag tile": {
               "$ref": "#/definitions/keys"
             }
           }
