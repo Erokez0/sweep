@@ -4,9 +4,11 @@ import (
 	"fmt"
 	"os"
 	"strconv"
-	"sweep/config/colors"
+
+	colors "sweep/config/colors"
 	types "sweep/shared/types"
 	glyphs "sweep/shared/vars/glyphs"
+	paths "sweep/shared/vars/paths"
 	styles "sweep/tui/styles"
 	themepreview "sweep/tui/theme-preview"
 )
@@ -72,8 +74,7 @@ func (f Flags) Apply(colors *colors.Colors) BasicConfig {
 			preview = true
 
 		case CONFIG, CONFIG_SHORT:
-			dir, _ := os.Getwd()
-			fmt.Printf("%v/config.json\n", dir)
+			fmt.Printf("%v\n", paths.ConfigPath)
 			os.Exit(0)
 
 		case HEIGHT, HEIGHT_SHORT:

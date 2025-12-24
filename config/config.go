@@ -10,6 +10,7 @@ import (
 	colors "sweep/config/colors"
 	cursor "sweep/config/cursor"
 	flags "sweep/config/flags"
+	"sweep/shared/vars/paths"
 
 	gojsonschema "github.com/xeipuuv/gojsonschema"
 )
@@ -35,15 +36,14 @@ type Config struct {
 	Cursor  cursor.Cursor `json:"cursor"`
 }
 
-var (
-	schema = gojsonschema.NewReferenceLoader("file:///home/erokez/Desktop/code/sweep/config.schema.json")
-)
-
 func (config *Config) validate() (bool, []string) {
 	configLoader := gojsonschema.NewGoLoader(config)
-	errors := []string{}
+	
+	schema := loadSchema(paths.ConfigSchemaPath)
+	schemaLoader := gojsonschema.NewGoLoader(schema)
 
-	result, err := gojsonschema.Validate(schema, configLoader)
+	errors := []string{}
+	result, err := gojsonschema.Validate(schemaLoader, configLoader)
 	if err != nil {
 		log.Fatalf("%v\nProbable cause: config file does not exist", err.Error())
 	}
@@ -83,7 +83,21 @@ func (config *Config) Apply() {
 	config.Cursor.Apply()
 }
 
-func LoadConfig(configPath string) (*Config, error) {
+func loadSchema(schemaPath string) (*any) {
+	schemaBin, err := os.ReadFile(schemaPath)
+	if err != nil {
+		log.Fatalf("Could not read config schema %v\nDoes the file exist?", schemaPath)
+	}
+	schema := new(any)
+	err = json.Unmarshal(schemaBin, schema)
+	if err != nil {
+		log.Fatalf("Could not parse config schema %v\n", schemaPath)
+	}
+
+	return schema
+}
+
+func LoadConfig(configPath string) (*Config) {
 	configBin, err := os.ReadFile(configPath)
 	if err != nil {
 		log.Fatalf("Could not read config %v\nDoes the file exist?", configPath)
@@ -107,17 +121,20 @@ func LoadConfig(configPath string) (*Config, error) {
 
 	config.Apply()
 
-	return config, nil
+	return config
 }
 
+// TODO add fallback to default config
 func GetConfig() *Config {
 	config := new(Config)
 
-	var err error
-	config, err = LoadConfig("/home/erokez/Desktop/code/sweep/config.json")
-	if err == nil {
-		return config
-	}
+	// var err error
+	config = LoadConfig(paths.ConfigPath)
+
+	// config, err = LoadConfig(paths.DefaultConfigPath)
+	// if err != nil {
+		// return config
+	// }
 
 	return config
 }
