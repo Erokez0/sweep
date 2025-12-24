@@ -12,6 +12,7 @@ import (
 	tilecontent "sweep/shared/consts/tile-content"
 	types "sweep/shared/types"
 	glyphs "sweep/shared/vars/glyphs"
+	"sweep/shared/vars/regexes"
 	styles "sweep/tui/styles"
 	themepreview "sweep/tui/theme-preview"
 
@@ -30,21 +31,7 @@ func (c Color) isSet() bool {
 	return c != ""
 }
 
-type Colors struct {
-	Zero      Color `json:"0"`
-	One       Color `json:"1"`
-	Two       Color `json:"2"`
-	Three     Color `json:"3"`
-	Four      Color `json:"4"`
-	Five      Color `json:"5"`
-	Six       Color `json:"6"`
-	Seven     Color `json:"7"`
-	Eight     Color `json:"8"`
-	Mine      Color `json:"mine"`
-	Flag      Color `json:"flag"`
-	WrongFlag Color `json:"wrong flag"`
-	Empty     Color `json:"empty"`
-}
+type Colors map[string]string
 
 type Action string
 
@@ -91,6 +78,21 @@ type Cursor struct {
 	RightHalf string `json:"right half"`
 }
 
+func (c *Cursor) validate() (bool, []string) {
+	errors := []string{}
+	if c.Color != "" && !regexes.ColorRegex.MatchString(string(c.Color)) {
+		errors = append(errors, "(cursor.color) cursor color does not match ANSI nor HEX RGB")
+	}
+	if len(c.LeftHalf) > 1 {
+		errors = append(errors, "(cursor.left half) cursor left half is longer than one character")
+	}
+	if len(c.RightHalf) > 1 {
+		errors = append(errors, "(cursor.right half) cursor right half is longer than one character")
+	}
+
+	return len(errors) == 0, errors
+}
+
 type Config struct {
 	Flags    []types.Flag `json:"flags"`
 	Defaults Defaults     `json:"defaults"`
@@ -104,50 +106,23 @@ type Config struct {
 	Cursor Cursor `json:"cursor"`
 }
 
+func (c *Colors) validate() (bool, []string) {
+	errors := []string{}
+	for key, val := range *c {
+		if val != "" && !regexes.ColorRegex.MatchString(val) {
+			errors = append(errors, fmt.Sprintf("(colors.%v) %v does not match ANSI nor HEX RGB", key, val))
+		}
+		if _, err := tilecontent.FromString(key); err != nil {
+			errors = append(errors, fmt.Sprintf("(colors) %v is not a valid option", key))
+		}
+	}
+	return len(errors) == 0, errors
+}
+
 func (config *Config) applyColors() {
-	if config.Colors == *new(Colors) {
-		return
-	}
-	if config.Colors.Zero.isSet() {
-		styles.SetTileColor(tilecontent.Zero, string(config.Colors.Zero))
-	}
-
-	if config.Colors.One.isSet() {
-		styles.SetTileColor(tilecontent.One, string(config.Colors.One))
-	}
-	if config.Colors.Two.isSet() {
-		styles.SetTileColor(tilecontent.Two, string(config.Colors.Two))
-	}
-	if config.Colors.Three.isSet() {
-		styles.SetTileColor(tilecontent.Three, string(config.Colors.Three))
-	}
-	if config.Colors.Four.isSet() {
-		styles.SetTileColor(tilecontent.Four, string(config.Colors.Four))
-	}
-	if config.Colors.Five.isSet() {
-		styles.SetTileColor(tilecontent.Five, string(config.Colors.Five))
-	}
-	if config.Colors.Six.isSet() {
-		styles.SetTileColor(tilecontent.Six, string(config.Colors.Six))
-	}
-	if config.Colors.Seven.isSet() {
-		styles.SetTileColor(tilecontent.Seven, string(config.Colors.Seven))
-	}
-	if config.Colors.Eight.isSet() {
-		styles.SetTileColor(tilecontent.Eight, string(config.Colors.Eight))
-	}
-
-	if config.Colors.Mine.isSet() {
-		styles.SetTileColor(tilecontent.Mine, string(config.Colors.Mine))
-	}
-	if config.Colors.Flag.isSet() {
-		styles.SetTileColor(tilecontent.Flag, string(config.Colors.Flag))
-	}
-	if config.Colors.WrongFlag.isSet() {
-		styles.SetTileColor(tilecontent.WrongFlag, string(config.Colors.WrongFlag))
-	}
-	if config.Colors.Empty.isSet() {
-		styles.SetTileColor(tilecontent.Empty, string(config.Colors.Empty))
+	for key, color := range config.Colors {
+		tileContent, _ := tilecontent.FromString(key)
+		styles.SetTileColor(tileContent, color)
 	}
 }
 
@@ -155,18 +130,32 @@ var (
 	schema = gojsonschema.NewReferenceLoader("file:///home/erokez/Desktop/code/sweep/config.schema.json")
 )
 
-func validate(source string) (bool, []error) {
-	config := gojsonschema.NewReferenceLoader(fmt.Sprintf("file://%v", source))
+func (config *Config) validate() (bool, []string) {
+	configLoader := gojsonschema.NewGoLoader(config)
+	errors := []string{}
 
-	result, err := gojsonschema.Validate(schema, config)
+	result, err := gojsonschema.Validate(schema, configLoader)
 	if err != nil {
-		log.Fatal(err)
+		log.Fatalf("%v\nProbable cause: config file does not exist", err.Error())
 	}
-	if result.Valid() {
-		return true, nil
+
+	if !result.Valid() {
+		schemaErrors := make([]string, len(result.Errors()))
+		for ix, error := range result.Errors() {
+			schemaErrors[ix] = error.String()
+		}
+		errors = append(errors, schemaErrors...)
 	}
-	fmt.Println(result.Errors())
-	return false, nil
+
+	if isValid, colorsErrors := config.Colors.validate(); !isValid {
+		errors = append(errors, colorsErrors...)
+	}
+
+	if isValid, cursorErrors := config.Cursor.validate(); !isValid {
+		errors = append(errors, cursorErrors...)
+	}
+
+	return len(errors) == 0, errors
 }
 
 func getFlagIntArgument(args []string, index int) (uint16, error) {
@@ -264,24 +253,23 @@ func (config *Config) applyCursorStyle() {
 func LoadConfig(configPath string) (*Config, error) {
 	configBin, err := os.ReadFile(configPath)
 	if err != nil {
-		return nil, err
+		log.Fatalf("Could not read config %v\nDoes the file exist?", configPath)
 	}
 
 	config := new(Config)
 	err = json.Unmarshal(configBin, config)
 	if err != nil {
-		return nil, err
+		log.Fatalf("Could not parse config %v\nCheck its integriy", configPath)
 	}
 
-	isValid, errors := validate(configPath)
+	isValid, errors := config.validate()
 
 	if !isValid {
 		fmt.Println("Your config file has errors")
 		for k, v := range errors {
-			fmt.Printf("%v - %v", k, v)
+			fmt.Printf("%v. %v", k+1, v)
 		}
 		os.Exit(1)
-		panic("it should have exited")
 	}
 
 	config.applyFlags()
@@ -299,8 +287,6 @@ func GetConfig() *Config {
 	if err == nil {
 		return config
 	}
-
-	config, _ = LoadConfig("../../config.default.json")
 
 	return config
 }
