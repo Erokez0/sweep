@@ -162,6 +162,51 @@ func (m model) openAroundOpenTile(position types.Position) {
 	wg.Wait()
 }
 
+func (m *model) MoveCursorUp() {
+	if m.cursorPosition.X > 0 {
+		m.cursorPosition.X--
+	}
+}
+func (m *model) MoveCursorDown() {
+	if m.cursorPosition.X < uint16(m.gameEngine.GetWidth())-1 {
+		m.cursorPosition.X++
+	}
+}
+func (m *model) MoveCursorRight() {
+	if m.cursorPosition.Y < uint16(m.gameEngine.GetHeight())-1 {
+		m.cursorPosition.Y++
+	}
+}
+func (m *model) MoveCursorLeft() {
+	if m.cursorPosition.Y > 0 {
+		m.cursorPosition.Y--
+	}
+}
+func (m *model) FlagTile() {
+	if m.moves == 0 {
+		return
+	}
+	m.moves++
+
+	x, y := m.cursorPosition.GetCoords()
+	m.gameEngine.FlagToggleTile(m.cursorPosition)
+	switch m.tiles[x][y] {
+	case tilecontent.Empty:
+		m.tiles[x][y] = tilecontent.Flag
+		m.flags++
+	case tilecontent.Flag:
+		m.tiles[x][y] = tilecontent.Empty
+		m.flags--
+	}
+}
+func (m *model) OpenTile() {
+	if m.moves == 0 {
+		m.gameEngine.SetMines(m.cursorPosition)
+	}
+	m.moves++
+	m.openTile(m.cursorPosition)
+}
+
 func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	if m.gameEngine.IsFinished() {
 		switch msg.(tea.KeyMsg).String() {
@@ -180,53 +225,27 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		}
 
 		if m.config.Bindings.IsMoveCursorDown(msgString) {
-			if m.cursorPosition.X < uint16(m.gameEngine.GetWidth())-1 {
-				m.cursorPosition.X++
-			}
+			m.MoveCursorDown()
 		}
 
 		if m.config.Bindings.IsMoveCursorUp(msgString) {
-			if m.cursorPosition.X > 0 {
-				m.cursorPosition.X--
-			}
+			m.MoveCursorUp()
 		}
 
 		if m.config.Bindings.IsMoveCursorLeft(msgString) {
-			if m.cursorPosition.Y > 0 {
-				m.cursorPosition.Y--
-			}
+			m.MoveCursorLeft()
 		}
 
 		if m.config.Bindings.IsMoveCursorRight(msgString) {
-			if m.cursorPosition.Y < uint16(m.gameEngine.GetHeight())-1 {
-				m.cursorPosition.Y++
-			}
+			m.MoveCursorRight()
 		}
 
 		if m.config.Bindings.IsOpenTile(msgString) {
-			if m.moves == 0 {
-				m.gameEngine.SetMines(m.cursorPosition)
-			}
-			m.moves++
-			m.openTile(m.cursorPosition)
+			m.OpenTile()
 		}
 
 		if m.config.Bindings.IsFlagTile(msgString) {
-			if m.moves == 0 {
-				break
-			}
-			m.moves++
-
-			x, y := m.cursorPosition.GetCoords()
-			m.gameEngine.FlagToggleTile(m.cursorPosition)
-			switch m.tiles[x][y] {
-			case tilecontent.Empty:
-				m.tiles[x][y] = tilecontent.Flag
-				m.flags++
-			case tilecontent.Flag:
-				m.tiles[x][y] = tilecontent.Empty
-				m.flags--
-			}
+			m.FlagTile()
 		}
 
 	}
