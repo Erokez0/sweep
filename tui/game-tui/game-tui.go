@@ -20,13 +20,13 @@ import (
 )
 
 type model struct {
-	config          config.Config
-	cursorPosition  types.Position
-	gameEngine      types.IGameEngine
-	tiles           [][]tilecontent.TileContent
-	startTime       time.Time
-	moves           int16
-	flags           int16
+	config         config.Config
+	cursorPosition types.Position
+	gameEngine     types.IGameEngine
+	tiles          [][]tilecontent.TileContent
+	startTime      time.Time
+	moves          int16
+	flags          int16
 }
 
 func CreateModel(config *config.Config) model {
@@ -47,11 +47,11 @@ func CreateModel(config *config.Config) model {
 			X: config.Width / 2,
 			Y: config.Height / 2,
 		},
-		gameEngine:      &gameEngine,
-		tiles:           tiles,
-		startTime:       time.Now(),
-		moves:           0,
-		config:          *config,
+		gameEngine: &gameEngine,
+		tiles:      tiles,
+		startTime:  time.Now(),
+		moves:      0,
+		config:     *config,
 	}
 }
 
@@ -81,7 +81,11 @@ func (m model) openTile(position types.Position) {
 	}
 
 	count := m.gameEngine.CountNeighbouringMines(position)
-	m.tiles[x][y] = tilecontent.FromNumber(count)
+	tileContent, err := tilecontent.FromNumber(count)
+	if err != nil {
+		panic(err)
+	}
+	m.tiles[x][y] = tileContent
 
 	if count == 0 {
 		m.openSafeAroundTile(position)
@@ -144,7 +148,12 @@ func (m model) openAroundOpenTile(position types.Position) {
 			}
 
 			count := m.gameEngine.CountNeighbouringMines(position)
-			m.tiles[x][y] = tilecontent.FromNumber(count)
+
+			tileContent, err := tilecontent.FromNumber(count)
+			if err != nil {
+				panic(err)
+			}
+			m.tiles[x][y] = tileContent
 			if count == 0 {
 				m.openSafeAroundTile(position)
 			}
