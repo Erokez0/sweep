@@ -1,8 +1,9 @@
 package themepreview
 
 import (
-	tilecontent "sweep/shared/consts/tile-content"
+	"strings"
 
+	tilecontent "sweep/shared/consts/tile-content"
 	tilerenderer "sweep/tui/tile-renderer"
 )
 
@@ -28,15 +29,15 @@ func RenderThemePreview() string {
 		},
 	}
 
-	result := ""
+	var result strings.Builder
 	for x := range allTiles {
 		for y := range allTiles[x] {
 			tile := allTiles[x][y]
-			result += tilerenderer.RenderTileByContent(tile, false) + " "
-			result += tilerenderer.RenderTileByContent(tile, true) + " "
+			result.WriteString(tilerenderer.RenderTileByContent(tile, false) + " ")
+			result.WriteString(tilerenderer.RenderTileByContent(tile, true) + " ")
 		}
-		result += "\n\r"
+		result.WriteString("\n\r")
 	}
 
-	return result
+	return result.String()
 }
