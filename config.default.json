@@ -2,7 +2,7 @@
   "$schema": "./config.schema.json",
 
   "flags": [
-    "--f"
+    "--F"
   ],
   
   "colors": {
