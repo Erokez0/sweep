@@ -130,6 +130,22 @@ func (f Flags) Apply() {
 
 		case FILL, FILL_SHORT:
 			styles.SetFill(true)
+
+		case DEFAULT_CONFIG, DEFAULT_CONFIG_SHORT:
+			defaultConfig, err := os.ReadFile(paths.DefaultConfigPath)
+
+			if err != nil {
+				fmt.Printf("could not read the default config file at %v\nDoes the file exist?", paths.DefaultConfigPath)
+				os.Exit(1)
+			}
+
+			err = os.WriteFile(paths.ConfigPath, defaultConfig, 0666)
+			if err != nil {
+				fmt.Printf("could not write the default config to %v\nDo you have the right permissions?", paths.ConfigPath)
+				os.Exit(1)
+			}
+			fmt.Printf("the default config was copied to the main config file at %v", paths.ConfigPath)
+			os.Exit(0)
 		}
 	}
 }

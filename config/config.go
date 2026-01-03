@@ -25,10 +25,10 @@ type Defaults struct {
 }
 
 type Config struct {
-	Flags    flags.Flags       `json:"flags"`
+	Flags    flags.Flags       `json:"flags,omitempty"`
 	Defaults Defaults          `json:"defaults"`
-	Colors   colors.Colors     `json:"colors"`
-	Bindings bindings.Bindings `json:"bindings"`
+	Colors   colors.Colors     `json:"colors,omitempty"`
+	Bindings bindings.Bindings `json:"bindings,omitempty"`
 
 	Mines  uint16 `json:"mines,omitempty"`
 	Width  uint16 `json:"width,omitempty"`
@@ -69,6 +69,10 @@ func (config *Config) validate() (bool, []string) {
 		errors = append(errors, flagErrors...)
 	}
 
+	if isValid, bindingsErrors := config.Bindings.Validate(); !isValid {
+		errors = append(errors, bindingsErrors...)
+	}
+
 	return len(errors) == 0, errors
 }
 
@@ -76,6 +80,7 @@ func (config *Config) Apply() {
 	config.Flags.Apply()
 	config.Colors.Apply()
 	config.Cursor.Apply()
+	config.Bindings.Apply()
 
 	if val, ok := os.LookupEnv(envkeys.Preview); ok && val == "true" {
 		fmt.Println(themepreview.RenderThemePreview())
