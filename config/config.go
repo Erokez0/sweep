@@ -84,6 +84,7 @@ func (config *Config) Apply() {
 
 	if val, ok := os.LookupEnv(envkeys.Preview); ok && val == "true" {
 		fmt.Println(themepreview.RenderThemePreview())
+		os.Exit(0)
 	}
 	// Ignoring errors cause they were 
 	if val, ok := os.LookupEnv(envkeys.Height); ok {
