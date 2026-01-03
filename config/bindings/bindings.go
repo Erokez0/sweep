@@ -2,32 +2,20 @@ package bindings
 
 import (
 	"fmt"
-	"slices"
-	actions "sweep/shared/consts/action"
-	"sweep/shared/vars/regexes"
-)
 
-type ActionHandler = func()
+	actions "sweep/shared/consts/action"
+	keyactionmap "sweep/shared/vars/key-action-map"
+	regexes "sweep/shared/vars/regexes"
+)
 
 type Bindings map[actions.Action][]string
 
-func (b Bindings) IsMoveCursorUp(input string) bool {
-	return slices.Contains(b[actions.MoveCursorUp], input)
-}
-func (b Bindings) IsMoveCursorDown(input string) bool {
-	return slices.Contains(b[actions.MoveCursorDown], input)
-}
-func (b Bindings) IsMoveCursorLeft(input string) bool {
-	return slices.Contains(b[actions.MoveCursorLeft], input)
-}
-func (b Bindings) IsMoveCursorRight(input string) bool {
-	return slices.Contains(b[actions.MoveCursorRight], input)
-}
-func (b Bindings) IsOpenTile(input string) bool {
-	return slices.Contains(b[actions.OpenTile], input)
-}
-func (b Bindings) IsFlagTile(input string) bool {
-	return slices.Contains(b[actions.FlagTile], input)
+func (b Bindings) Apply() {
+	for action, bindings := range b {
+		for _, key  := range bindings {
+			keyactionmap.KeyActionMap[key] = action
+		}
+	}
 }
 
 func (b Bindings) Validate() (bool, []string) {

@@ -1,18 +1,20 @@
 package gametui
 
 import (
-	"strings"
 	"fmt"
 	"os"
+	"strings"
 	"sync"
 	"time"
 
 	config "sweep/config"
 	gameengine "sweep/game-engine"
+	actions "sweep/shared/consts/action"
 	misc "sweep/shared/consts/misc"
 	tilecontent "sweep/shared/consts/tile-content"
 	tiles "sweep/shared/consts/tiles"
 	types "sweep/shared/types"
+	keyactionmap "sweep/shared/vars/key-action-map"
 	endscreen "sweep/tui/end-screen"
 	styles "sweep/tui/styles"
 	tilerenderer "sweep/tui/tile-renderer"
@@ -163,29 +165,36 @@ func (m model) openAroundOpenTile(position types.Position) {
 	wg.Wait()
 }
 
-func (m *model) MoveCursorUp() {
+func (m model) MoveCursorUp() (model, tea.Cmd) {
 	if m.cursorPosition.X > 0 {
 		m.cursorPosition.X--
 	}
+	
+	return m, nil
 }
-func (m *model) MoveCursorDown() {
+func (m model) MoveCursorDown() (model, tea.Cmd) {
 	if m.cursorPosition.X < uint16(m.gameEngine.GetWidth())-1 {
 		m.cursorPosition.X++
 	}
+	
+	return m, nil
 }
-func (m *model) MoveCursorRight() {
+func (m model) MoveCursorRight() (model, tea.Cmd) {
 	if m.cursorPosition.Y < uint16(m.gameEngine.GetHeight())-1 {
 		m.cursorPosition.Y++
 	}
+	
+	return m, nil
 }
-func (m *model) MoveCursorLeft() {
+func (m model) MoveCursorLeft() (model, tea.Cmd) {
 	if m.cursorPosition.Y > 0 {
 		m.cursorPosition.Y--
 	}
+	return m, nil
 }
-func (m *model) FlagTile() {
+func (m model) FlagTile() (model, tea.Cmd) {
 	if m.moves == 0 {
-		return
+		return m, nil
 	}
 	m.moves++
 
@@ -199,13 +208,17 @@ func (m *model) FlagTile() {
 		m.tiles[x][y] = tilecontent.Empty
 		m.flags--
 	}
+
+	return m, nil
 }
-func (m *model) OpenTile() {
+func (m model) OpenTile() (model, tea.Cmd) {
 	if m.moves == 0 {
 		m.gameEngine.SetMines(m.cursorPosition)
 	}
 	m.moves++
 	m.openTile(m.cursorPosition)
+	
+	return m, nil
 }
 
 func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
@@ -224,31 +237,27 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case "ctrl+c", "q":
 			os.Exit(0)
 		}
+	
+		action, ok := keyactionmap.KeyActionMap[msgString]
 
-		if m.config.Bindings.IsMoveCursorDown(msgString) {
-			m.MoveCursorDown()
+		if !ok {
+			return m, nil
 		}
-
-		if m.config.Bindings.IsMoveCursorUp(msgString) {
-			m.MoveCursorUp()
+		
+		switch action {
+		case actions.FlagTile:
+			return m.FlagTile()
+		case actions.MoveCursorDown:
+			return m.MoveCursorDown()
+		case actions.MoveCursorLeft:
+			return m.MoveCursorLeft()
+		case actions.MoveCursorRight:
+			return m.MoveCursorRight()
+		case actions.MoveCursorUp:
+			return m.MoveCursorUp()
+		case actions.OpenTile:
+			return m.OpenTile()
 		}
-
-		if m.config.Bindings.IsMoveCursorLeft(msgString) {
-			m.MoveCursorLeft()
-		}
-
-		if m.config.Bindings.IsMoveCursorRight(msgString) {
-			m.MoveCursorRight()
-		}
-
-		if m.config.Bindings.IsOpenTile(msgString) {
-			m.OpenTile()
-		}
-
-		if m.config.Bindings.IsFlagTile(msgString) {
-			m.FlagTile()
-		}
-
 	}
 
 	return m, nil
