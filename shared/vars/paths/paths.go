@@ -4,11 +4,12 @@ import (
 	"fmt"
 	"os"
 	"runtime"
+	consts "sweep/shared/consts/misc"
 )
 
 const (
-	unixBasePath    = "/home/%v/.config/sweep/"
-	windowsBasePath = "c:/ProgramData/sweep/"
+	unixBasePath    = "/home/%v/.config/" + consts.APP_NAME + "/"
+	windowsBasePath = "c:/ProgramData/" + consts.APP_NAME + "/"
 
 	configName        = "config.json"
 	configSchemaName  = "config.schema.json"
