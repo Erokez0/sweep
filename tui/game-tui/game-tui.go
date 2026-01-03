@@ -1,6 +1,7 @@
 package gametui
 
 import (
+	"strings"
 	"fmt"
 	"os"
 	"sync"
@@ -268,9 +269,10 @@ func (m model) View() string {
 		return endscreen.View()
 	}
 
-	s := styles.HeaderStyle.Render(fmt.Sprintf("%v %v/%v", misc.APP_NAME, m.flags, m.config.Mines))
+	var s strings.Builder
+	s.WriteString(styles.HeaderStyle.Render(fmt.Sprintf("%v %v/%v", misc.APP_NAME, m.flags, m.config.Mines)))
 
-	var lines string
+	var lines strings.Builder
 	for x, row := range m.tiles {
 		var line string
 		for y, tile := range row {
@@ -278,22 +280,24 @@ func (m model) View() string {
 			renderedTile := tilerenderer.RenderTileByContent(tile, isFocused)
 			line += renderedTile
 		}
-		lines += "\n"
+		lines.WriteString("\n")
 		if x == 0 {
-			lines += styles.BorderTop.Render(line)
+			lines.WriteString(styles.BorderTop.Render(line))
 		} else if x == len(m.tiles)-1 {
-			lines += styles.BorderBottom.Render(line)
+			lines.WriteString(styles.BorderBottom.Render(line))
 		} else {
-			lines += line
+			lines.WriteString(line)
 		}
 	}
 
-	s += lines + "\n"
+	s.WriteString(lines.String())
+	s.WriteRune('\n')
 	timeSinceStart := time.Since(m.startTime)
 
 	beautifiedTime := beautifyTimeDuration(timeSinceStart)
 	tea.SetWindowTitle(fmt.Sprintf("%v - %v", misc.APP_NAME, beautifiedTime))
-	s += fmt.Sprintf("time - %v", beautifiedTime)
-	return styles.TableStyle.Render(s)
+	fmt.Fprintf(&s, "time - %v", beautifiedTime)
+
+	return styles.TableStyle.Render(s.String())
 
 }
