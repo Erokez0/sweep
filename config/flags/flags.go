@@ -5,21 +5,15 @@ import (
 	"os"
 	"strconv"
 
-	colors "sweep/config/colors"
+	envkeys "sweep/shared/consts/env-keys"
 	types "sweep/shared/types"
 	glyphs "sweep/shared/vars/glyphs"
 	paths "sweep/shared/vars/paths"
 	styles "sweep/tui/styles"
-	themepreview "sweep/tui/theme-preview"
 )
 
 type Flags []types.Flag
 
-type BasicConfig struct {
-	Mines uint16
-	Height uint16
-	Width uint16
-}
 const (
 	ASCII       types.Flag = "--ascii"
 	ASCII_SHORT types.Flag = "--A"
@@ -41,27 +35,65 @@ const (
 
 	FILL       types.Flag = "--fill"
 	FILL_SHORT types.Flag = "--F"
+
+	DEFAULT_CONFIG       types.Flag = "--default-config"
+	DEFAULT_CONFIG_SHORT types.Flag = "--D"
 )
 
-func getFlagIntArgument(args []string, index int) (uint16, error) {
+func validateFlagUint16Argument(args []string, index int) (bool, []string) {
+	errors := []string{}
+	if index+1 >= len(args) {
+		return false, []string{fmt.Sprintf("argument for flag \"%v\" was not provided", args[index])}
+	}
 	val := args[index+1]
-	if len(args) <= index {
-		return 0, fmt.Errorf("argument was not provided")
-	}
-	numVal, err := strconv.Atoi(val)
+	_, err := strconv.ParseUint(val, 10, 16)
+
 	if err != nil {
-		return 0, fmt.Errorf("argument is not an integer")
+		errors = append(errors, fmt.Sprintf("argument for flag \"%v\" must be a unsigned 16 bit integer (0-65535)", args[index]))
 	}
-	return uint16(numVal), nil
+
+	return len(errors) == 0, errors
 }
 
-func (f Flags) Apply(colors *colors.Colors) BasicConfig {
+func getFlagArgument(args []string, index int) string {
+	return args[index+1]
+}
+
+func (f Flags) Validate() (bool, []string) {
 	skip := false
 	args := os.Args[1:]
 	flagList := append(args, f...)
-	var basicConfig BasicConfig
+	errors := []string{}
 
-	preview := false
+	for ix, arg := range flagList {
+		if skip {
+			skip = false
+			continue
+		}
+
+		switch arg {
+		case HEIGHT, HEIGHT_SHORT, WIDTH, WIDTH_SHORT, MINES, MINES_SHORT:
+			skip = true
+			if isValid, flagErrors := validateFlagUint16Argument(args, ix); !isValid {
+				errors = append(errors, flagErrors...)
+			}
+		case ASCII, ASCII_SHORT,
+			FILL, FILL_SHORT, CONFIG, CONFIG_SHORT,
+			THEME_PREVIEW, THEME_PREVIEW_SHORT,
+			DEFAULT_CONFIG, DEFAULT_CONFIG_SHORT:
+
+			continue
+		default:
+			errors = append(errors, fmt.Sprintf("invalid flag \"%v\"", arg))
+		}
+	}
+	return len(errors) == 0, errors
+}
+
+func (f Flags) Apply() {
+	skip := false
+	args := os.Args[1:]
+	flagList := append(args, f...)
 
 	for ix, arg := range flagList {
 		if skip {
@@ -71,7 +103,7 @@ func (f Flags) Apply(colors *colors.Colors) BasicConfig {
 
 		switch arg {
 		case THEME_PREVIEW, THEME_PREVIEW_SHORT:
-			preview = true
+			os.Setenv(envkeys.Preview, "true")
 
 		case CONFIG, CONFIG_SHORT:
 			fmt.Printf("%v\n", paths.ConfigPath)
@@ -79,30 +111,15 @@ func (f Flags) Apply(colors *colors.Colors) BasicConfig {
 
 		case HEIGHT, HEIGHT_SHORT:
 			skip = true
-			val, err := getFlagIntArgument(args, ix)
-			if err != nil {
-				fmt.Printf("%v - %v", arg, err)
-			} else {
-				basicConfig.Height = val
-			}
+			os.Setenv(envkeys.Height, getFlagArgument(args, ix))
 
 		case WIDTH, WIDTH_SHORT:
 			skip = true
-			val, err := getFlagIntArgument(args, ix)
-			if err != nil {
-				fmt.Printf("%v - %v", arg, err)
-			} else {
-				basicConfig.Width = val
-			}
+			os.Setenv(envkeys.Width, getFlagArgument(args, ix))
 
 		case MINES, MINES_SHORT:
 			skip = true
-			val, err := getFlagIntArgument(args, ix)
-			if err != nil {
-				fmt.Printf("%v - %v", arg, err)
-			} else {
-				basicConfig.Mines = val
-			}
+			os.Setenv(envkeys.Mines, getFlagArgument(args, ix))
 
 		case ASCII, ASCII_SHORT:
 			glyphs.MINE = "M"
@@ -113,13 +130,6 @@ func (f Flags) Apply(colors *colors.Colors) BasicConfig {
 
 		case FILL, FILL_SHORT:
 			styles.SetFill(true)
-
 		}
 	}
-	if preview {
-		colors.Apply()
-		print(themepreview.RenderThemePreview())
-		os.Exit(0)
-	}
-	return basicConfig
 }

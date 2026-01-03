@@ -5,12 +5,15 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"strconv"
 
 	bindings "sweep/config/bindings"
 	colors "sweep/config/colors"
 	cursor "sweep/config/cursor"
 	flags "sweep/config/flags"
-	"sweep/shared/vars/paths"
+	envkeys "sweep/shared/consts/env-keys"
+	paths "sweep/shared/vars/paths"
+	themepreview "sweep/tui/theme-preview"
 
 	gojsonschema "github.com/xeipuuv/gojsonschema"
 )
@@ -20,8 +23,6 @@ type Defaults struct {
 	Height uint16
 	Mines  uint16
 }
-
-
 
 type Config struct {
 	Flags    flags.Flags       `json:"flags"`
@@ -33,12 +34,12 @@ type Config struct {
 	Width  uint16 `json:"width,omitempty"`
 	Height uint16 `json:"height,omitempty"`
 
-	Cursor  cursor.Cursor `json:"cursor"`
+	Cursor cursor.Cursor `json:"cursor"`
 }
 
 func (config *Config) validate() (bool, []string) {
 	configLoader := gojsonschema.NewGoLoader(config)
-	
+
 	schema := loadSchema(paths.ConfigSchemaPath)
 	schemaLoader := gojsonschema.NewGoLoader(schema)
 
@@ -64,26 +65,37 @@ func (config *Config) validate() (bool, []string) {
 		errors = append(errors, cursorErrors...)
 	}
 
-	if isValid, cursorErrors := config.Bindings.Validate(); !isValid {
-		errors = append(errors, cursorErrors...)
+	if isValid, flagErrors := config.Flags.Validate(); !isValid {
+		errors = append(errors, flagErrors...)
 	}
 
 	return len(errors) == 0, errors
 }
 
-
-
 func (config *Config) Apply() {
-	basic := config.Flags.Apply(&config.Colors)
-	config.Mines = basic.Mines
-	config.Height = basic.Height
-	config.Width = basic.Width
-
+	config.Flags.Apply()
 	config.Colors.Apply()
 	config.Cursor.Apply()
+
+	if val, ok := os.LookupEnv(envkeys.Preview); ok && val == "true" {
+		fmt.Println(themepreview.RenderThemePreview())
+	}
+	// Ignoring errors cause they were 
+	if val, ok := os.LookupEnv(envkeys.Height); ok {
+		parsed, _ := strconv.ParseUint(val, 10, 16)
+		config.Height = uint16(parsed)
+	}
+	if val, ok := os.LookupEnv(envkeys.Width); ok {
+		parsed, _ := strconv.ParseUint(val, 10, 16)
+		config.Width = uint16(parsed)
+	}
+	if val, ok := os.LookupEnv(envkeys.Mines); ok {
+		parsed, _ := strconv.ParseUint(val, 10, 16)
+		config.Mines = uint16(parsed)
+	}
 }
 
-func loadSchema(schemaPath string) (*any) {
+func loadSchema(schemaPath string) *any {
 	schemaBin, err := os.ReadFile(schemaPath)
 	if err != nil {
 		log.Fatalf("Could not read config schema %v\nDoes the file exist?", schemaPath)
@@ -97,8 +109,9 @@ func loadSchema(schemaPath string) (*any) {
 	return schema
 }
 
-func LoadConfig(configPath string) (*Config) {
+func LoadConfig(configPath string) *Config {
 	configBin, err := os.ReadFile(configPath)
+	log.SetFlags(log.Lmsgprefix)
 	if err != nil {
 		log.Fatalf("Could not read config %v\nDoes the file exist?", configPath)
 	}
@@ -112,7 +125,7 @@ func LoadConfig(configPath string) (*Config) {
 	isValid, errors := config.validate()
 
 	if !isValid {
-		fmt.Println("Your config file has errors")
+		fmt.Println("Your config has errors")
 		for k, v := range errors {
 			fmt.Printf("%v. %v\n", k+1, v)
 		}
@@ -124,17 +137,10 @@ func LoadConfig(configPath string) (*Config) {
 	return config
 }
 
-// TODO add fallback to default config
 func GetConfig() *Config {
 	config := new(Config)
 
-	// var err error
 	config = LoadConfig(paths.ConfigPath)
-
-	// config, err = LoadConfig(paths.DefaultConfigPath)
-	// if err != nil {
-		// return config
-	// }
 
 	return config
 }
