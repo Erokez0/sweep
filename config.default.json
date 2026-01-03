@@ -1,5 +1,10 @@
 {
   "$schema": "./config.schema.json",
+
+  "flags": [
+    "--f"
+  ],
+  
   "colors": {
     "0": "8",
     "1": "12",
@@ -15,11 +20,15 @@
     "flag": "15",
     "empty": null
   },
+  
+  "mines": null,
+  "height": null,
+  "width": null,
 
   "defaults": {
-    "mines": null,
-    "width": null,
-    "height": null
+    "mines": 0,
+    "width": 0,
+    "height": 0
   },
 
   "bindings": {
@@ -49,6 +58,7 @@
     ]
   },
   "cursor": {
+    "color": null,
     "left half": "[",
     "right half": "]"
   }
