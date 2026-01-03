@@ -32,27 +32,27 @@
   },
 
   "bindings": {
-    "flagTile": [
+    "flag tile": [
       "x",
       "\\"
     ],
-    "openTile": [
+    "open tile": [
       "z",
       "enter"
     ],
-    "moveCursorDown": [
+    "move cursor down": [
       "j",
       "s"
     ],
-    "moveCursorUp": [
+    "move cursor up": [
       "k",
       "w"
     ],
-    "moveCursorRight": [
+    "move cursor right": [
       "l",
       "d"
     ],
-    "moveCursorLeft": [
+    "move cursor left": [
       "h",
       "a"
     ]
