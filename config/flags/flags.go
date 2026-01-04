@@ -6,6 +6,7 @@ import (
 	"strconv"
 
 	envkeys "sweep/shared/consts/env-keys"
+	consts "sweep/shared/consts/misc"
 	types "sweep/shared/types"
 	glyphs "sweep/shared/vars/glyphs"
 	paths "sweep/shared/vars/paths"
@@ -38,6 +39,8 @@ const (
 
 	DEFAULT_CONFIG       types.Flag = "--default-config"
 	DEFAULT_CONFIG_SHORT types.Flag = "--D"
+	
+	HELP types.Flag = "--help"
 )
 
 func validateFlagUint16Argument(args []string, index int) (bool, []string) {
@@ -80,7 +83,8 @@ func (f Flags) Validate() (bool, []string) {
 		case ASCII, ASCII_SHORT,
 			FILL, FILL_SHORT, CONFIG, CONFIG_SHORT,
 			THEME_PREVIEW, THEME_PREVIEW_SHORT,
-			DEFAULT_CONFIG, DEFAULT_CONFIG_SHORT:
+			DEFAULT_CONFIG, DEFAULT_CONFIG_SHORT,
+			HELP:
 
 			continue
 		default:
@@ -102,6 +106,10 @@ func (f Flags) Apply() {
 		}
 
 		switch arg {
+		case HELP:
+			fmt.Println(consts.HELP_MESSAGE)
+			os.Exit(0)
+
 		case THEME_PREVIEW, THEME_PREVIEW_SHORT:
 			os.Setenv(envkeys.Preview, "true")
 
