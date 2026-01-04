@@ -9,7 +9,7 @@ import (
 
 const (
 	unixBasePath    = "/home/%v/.config/" + consts.APP_NAME + "/"
-	windowsBasePath = "c:/ProgramData/" + consts.APP_NAME + "/"
+	windowsBasePath = "C:/ProgramData/" + consts.APP_NAME + "/"
 
 	configName        = "config.json"
 	configSchemaName  = "config.schema.json"
