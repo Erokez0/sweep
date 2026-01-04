@@ -1,12 +1,6 @@
 #!/bin/bash
 appName="sweep"
 
-if [ ! -e "go" ]; then
-    echo "\"go\" is missing, can not build"
-    return 2 2> /dev/null
-    exit 2
-fi
-
 echo "running tests"
 testResult=$(go test ./game-engine)
 testResultCode=$?
