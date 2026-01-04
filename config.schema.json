@@ -48,12 +48,8 @@
       "items": {
         "enum": [
           "--ascii",
-          "--preview",
-          "--config-path",
           "--fill",
           "--A",
-          "--P",
-          "--C",
           "--F"
         ]
       }
