@@ -97,7 +97,7 @@ func CreateModel(config *config.Config) model {
 
 func (m model) Init() tea.Cmd {
 	m.validateInputs()
-	return tea.SetWindowTitle(misc.APP_NAME)
+	return tea.SetWindowTitle(misc.AppName)
 }
 
 func (m *model) validateInputs() {
@@ -229,7 +229,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 func (m model) View() string {
 	var b strings.Builder
 
-	b.WriteString(styles.HeaderStyle.Render(misc.APP_ASCII_LOGO))
+	b.WriteString(styles.HeaderStyle.Render(misc.AppAsciiLogo))
 	b.WriteRune('\n')
 
 	for i := range m.inputs {
@@ -237,7 +237,7 @@ func (m model) View() string {
 		b.WriteRune('\n')
 		if len(m.messages[i]) > 0 {
 			b.WriteString(styles.BrightText.Faint(true).Render(m.messages[i][0]) + "\r")
-		}  else {
+		} else {
 			b.WriteRune('\n')
 		}
 	}

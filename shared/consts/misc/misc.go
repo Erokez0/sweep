@@ -1,14 +1,14 @@
 package consts
 
 const (
-	APP_ASCII_LOGO = `███████╗██╗    ██╗███████╗███████╗██████╗ 
+	AppAsciiLogo = `███████╗██╗    ██╗███████╗███████╗██████╗ 
 ██╔════╝██║    ██║██╔════╝██╔════╝██╔══██╗
 ███████╗██║ █╗ ██║█████╗  █████╗  ██████╔╝
 ╚════██║██║███╗██║██╔══╝  ██╔══╝  ██╔═══╝ 
 ███████║╚███╔███╔╝███████╗███████╗██║     
 ╚══════╝ ╚══╝╚══╝ ╚══════╝╚══════╝╚═╝`
-	APP_NAME     = "sweep"
-	HELP_MESSAGE = "Usage" + APP_NAME + `[OPTION] ...
+	AppName     = "sweep"
+	HelpMessage = "Usage" + AppName + `[OPTION] ...
 List of options:
 	--help 									display help and exit
 	--D, --default-config 	copy the default configuration file to the destination of the main configuration file (config.json) and exit

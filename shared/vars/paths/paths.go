@@ -8,8 +8,8 @@ import (
 )
 
 const (
-	unixBasePath    = "/home/%v/.config/" + consts.APP_NAME + "/"
-	windowsBasePath = "C:/ProgramData/" + consts.APP_NAME + "/"
+	unixBasePath    = "/home/%v/.config/" + consts.AppName + "/"
+	windowsBasePath = "C:/ProgramData/" + consts.AppName + "/"
 
 	configName        = "config.json"
 	configSchemaName  = "config.schema.json"

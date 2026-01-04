@@ -59,7 +59,7 @@ func CreateModel(config *config.Config) model {
 }
 
 func (m model) Init() tea.Cmd {
-	return tea.SetWindowTitle(misc.APP_NAME)
+	return tea.SetWindowTitle(misc.AppName)
 }
 
 var _ tea.Model = model{}
@@ -169,21 +169,21 @@ func (m model) MoveCursorUp() (model, tea.Cmd) {
 	if m.cursorPosition.X > 0 {
 		m.cursorPosition.X--
 	}
-	
+
 	return m, nil
 }
 func (m model) MoveCursorDown() (model, tea.Cmd) {
 	if m.cursorPosition.X < uint16(m.gameEngine.GetWidth())-1 {
 		m.cursorPosition.X++
 	}
-	
+
 	return m, nil
 }
 func (m model) MoveCursorRight() (model, tea.Cmd) {
 	if m.cursorPosition.Y < uint16(m.gameEngine.GetHeight())-1 {
 		m.cursorPosition.Y++
 	}
-	
+
 	return m, nil
 }
 func (m model) MoveCursorLeft() (model, tea.Cmd) {
@@ -217,7 +217,7 @@ func (m model) OpenTile() (model, tea.Cmd) {
 	}
 	m.moves++
 	m.openTile(m.cursorPosition)
-	
+
 	return m, nil
 }
 
@@ -237,13 +237,13 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case "ctrl+c", "q":
 			os.Exit(0)
 		}
-	
+
 		action, ok := keyactionmap.KeyActionMap[msgString]
 
 		if !ok {
 			return m, nil
 		}
-		
+
 		switch action {
 		case actions.FlagTile:
 			return m.FlagTile()
@@ -279,7 +279,7 @@ func (m model) View() string {
 	}
 
 	var s strings.Builder
-	s.WriteString(styles.HeaderStyle.Render(fmt.Sprintf("%v %v/%v", misc.APP_NAME, m.flags, m.config.Mines)))
+	s.WriteString(styles.HeaderStyle.Render(fmt.Sprintf("%v %v/%v", misc.AppName, m.flags, m.config.Mines)))
 
 	var lines strings.Builder
 	for x, row := range m.tiles {
@@ -304,7 +304,7 @@ func (m model) View() string {
 	timeSinceStart := time.Since(m.startTime)
 
 	beautifiedTime := beautifyTimeDuration(timeSinceStart)
-	tea.SetWindowTitle(fmt.Sprintf("%v - %v", misc.APP_NAME, beautifiedTime))
+	tea.SetWindowTitle(fmt.Sprintf("%v - %v", misc.AppName, beautifiedTime))
 	fmt.Fprintf(&s, "time - %v", beautifiedTime)
 
 	return styles.TableStyle.Render(s.String())

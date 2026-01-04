@@ -39,7 +39,7 @@ const (
 
 	DEFAULT_CONFIG       types.Flag = "--default-config"
 	DEFAULT_CONFIG_SHORT types.Flag = "--D"
-	
+
 	HELP types.Flag = "--help"
 )
 
@@ -107,7 +107,7 @@ func (f Flags) Apply() {
 
 		switch arg {
 		case HELP:
-			fmt.Println(consts.HELP_MESSAGE)
+			fmt.Println(consts.HelpMessage)
 			os.Exit(0)
 
 		case THEME_PREVIEW, THEME_PREVIEW_SHORT:

@@ -28,7 +28,7 @@ func CreateModel(startTime time.Time, gameEngine types.IGameEngine) model {
 }
 
 func (m model) Init() tea.Cmd {
-	return tea.Batch(tea.SetWindowTitle(misc.APP_NAME), tea.ClearScreen)
+	return tea.Batch(tea.SetWindowTitle(misc.AppName), tea.ClearScreen)
 }
 
 var _ tea.Model = model{}
@@ -72,7 +72,7 @@ func (m model) View() string {
 			count := m.gameEngine.CountNeighbouringMines(types.Position{
 				X: uint16(x),
 				Y: uint16(y),
-			})	
+			})
 			tileContent, err := tilecontent.FromNumber(count)
 			if err != nil {
 				panic(err)
@@ -98,7 +98,7 @@ func (m model) View() string {
 	timeSinceStart := time.Since(m.startTime)
 
 	beautifiedTime := beautifyTimeDuration(timeSinceStart)
-	tea.SetWindowTitle(fmt.Sprintf("%v - %v", misc.APP_NAME, beautifiedTime))
+	tea.SetWindowTitle(fmt.Sprintf("%v - %v", misc.AppName, beautifiedTime))
 	s += fmt.Sprintf("time - %v", beautifiedTime)
 	return styles.TableStyle.Render(s)
 
