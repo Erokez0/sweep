@@ -1,7 +1,7 @@
-.github
 assets
 TODO.md
 README.md
-bin
 PKGBUILD
-config.json
+bin
+install.ps1
+install.sh
