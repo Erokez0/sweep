@@ -59,7 +59,7 @@ All of your configuration is stored like this
 
 ```
 # For windows
-C:/ProgramData/sweep/
+C:/Users/user/AppData/Roaming/sweep/
 ├── config.default.json
 ├── config.json
 └── config.schema.json
@@ -195,7 +195,7 @@ For each of them there may be set an unsigned 16 bit integer (0-65535) or null (
 
 The location of the config file depends on your operating system.
 
-For Windows it is `C:/ProgramData/sweep/`
+For Windows it is `C:/Users/user/AppData/Roaming/sweep/`
 
 And for UNIX-based OSs it is `~/.config/sweep/config.json`
 
