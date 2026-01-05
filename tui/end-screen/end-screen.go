@@ -3,12 +3,14 @@ package endscreen
 import (
 	"fmt"
 	"os"
+	"strings"
 	"time"
 
 	misc "sweep/shared/consts/misc"
 	tilecontent "sweep/shared/consts/tile-content"
 	tiles "sweep/shared/consts/tiles"
 	types "sweep/shared/types"
+	"sweep/shared/utils"
 	styles "sweep/tui/styles"
 	tilerenderer "sweep/tui/tile-renderer"
 
@@ -47,28 +49,32 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	return m, nil
 }
 
-func beautifyTimeDuration(duration time.Duration) string {
-	milliseconds := int(duration.Milliseconds()) % 100
-	seconds := int(duration.Seconds()) % 60
-	minutes := int(duration.Minutes()) % 60
-
-	return fmt.Sprintf("%d:%d,%d", minutes, seconds, milliseconds)
-}
-
 func (m model) View() string {
-	var lines string
+	var lines strings.Builder
 
 	win := true
 
 	field := m.gameEngine.GetField()
 
-	for x := range field {
+	width, height := m.gameEngine.GetWidth(), m.gameEngine.GetHeight()
+
+	for row := range height {
 		var line string
-		for y := range field[x] {
-			tile := field[x][y]
+		y := height - 1 - row
+		for col := range width {
+			x := col
+
+			position := types.Position{
+				X: x,
+				Y: y,
+			}
+
+			tile := m.gameEngine.GetTile(position)
+
 			if tile == tiles.OpenMine {
 				win = false
 			}
+
 			count := m.gameEngine.CountNeighbouringMines(types.Position{
 				X: uint16(x),
 				Y: uint16(y),
@@ -79,27 +85,29 @@ func (m model) View() string {
 			}
 			line += tilerenderer.RenderTileByType(tile, tileContent)
 		}
-		lines += "\n"
-		if x == 0 {
-			lines += styles.BorderTop.Render(line)
-		} else if x == len(field)-1 {
-			lines += styles.BorderBottom.Render(line)
+
+		lines.WriteRune('\n')
+		if row == 0 {
+			lines.WriteString(styles.BorderTop.Render(line))
+		} else if row == uint16(len(field)-1) {
+			lines.WriteString(styles.BorderBottom.Render(line))
 		} else {
-			lines += line
+			lines.WriteString(line)
 		}
 	}
-	var s string
+
+	var s strings.Builder
 	if win {
-		s = "You won!"
+		s.WriteString("You won!")
 	} else {
-		s = "You lost!"
+		s.WriteString("You lost!")
 	}
-	s += lines + "\n"
-	timeSinceStart := time.Since(m.startTime)
 
-	beautifiedTime := beautifyTimeDuration(timeSinceStart)
-	tea.SetWindowTitle(fmt.Sprintf("%v - %v", misc.AppName, beautifiedTime))
-	s += fmt.Sprintf("time - %v", beautifiedTime)
-	return styles.TableStyle.Render(s)
+	s.WriteString(lines.String())
+	s.WriteRune('\n')
 
+	formattedDuration := utils.FormatTime(time.Since(m.startTime))
+
+	fmt.Fprintf(&s, "time - %v", formattedDuration)
+	return styles.TableStyle.Render(s.String())
 }
