@@ -142,9 +142,9 @@ func LoadConfig(options *loadConfigOpts) *Config {
 		if err != nil {
 			log.Fatalf("Could not read config %v\nDoes the file exist?", options.path)
 		}
-		err = json.Unmarshal(configBin, config)
+		err = json.Unmarshal(configBin, &config)
 		if err != nil {
-			log.Fatalf("Could not parse config %v\nCheck if you are using the right data types", options.path)
+			log.Fatalf("Could not parse config %v\nCheck if you are using the right data types\n%v", options.path, string(configBin))
 		}
 
 	} else if options.jsonString != "" {
