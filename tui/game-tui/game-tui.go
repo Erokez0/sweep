@@ -14,6 +14,7 @@ import (
 	tilecontent "sweep/shared/consts/tile-content"
 	tiles "sweep/shared/consts/tiles"
 	types "sweep/shared/types"
+	"sweep/shared/utils"
 	keyactionmap "sweep/shared/vars/key-action-map"
 	endscreen "sweep/tui/end-screen"
 	styles "sweep/tui/styles"
@@ -22,11 +23,34 @@ import (
 	tea "github.com/charmbracelet/bubbletea"
 )
 
+type Tiles [][]tilecontent.TileContent
+
+func (t *Tiles) SetTile(position types.Position, tile tilecontent.TileContent) {
+	x, y := position.GetCoords()
+	(*t)[y][x] = tile
+}
+
+func (t Tiles) GetTile(position types.Position) tilecontent.TileContent {
+	x, y := position.GetCoords()
+	return t[y][x]
+}
+
+func CreateTiles(width, height uint16) *Tiles {
+	tiles := make(Tiles, height)
+	for y := range height {
+		tiles[y] = make([]tilecontent.TileContent, width)
+		for x := range width {
+			tiles[y][x] = tilecontent.Empty
+		}
+	}
+	return &tiles
+}
+
 type model struct {
 	config         config.Config
 	cursorPosition types.Position
 	gameEngine     types.IGameEngine
-	tiles          [][]tilecontent.TileContent
+	tiles          Tiles
 	startTime      time.Time
 	moves          int16
 	flags          int16
@@ -37,21 +61,13 @@ func CreateModel(config *config.Config) model {
 	gameEngine.SetMineCount(config.Mines)
 	gameEngine.SetFieldSize(config.Width, config.Height)
 
-	tiles := make([][]tilecontent.TileContent, config.Width)
-	for x := range config.Width {
-		tiles[x] = make([]tilecontent.TileContent, config.Height)
-		for y := range config.Height {
-			tiles[x][y] = tilecontent.Empty
-		}
-	}
-
 	return model{
 		cursorPosition: types.Position{
 			X: config.Width / 2,
 			Y: config.Height / 2,
 		},
 		gameEngine: &gameEngine,
-		tiles:      tiles,
+		tiles:      *CreateTiles(config.Width, config.Height),
 		startTime:  time.Now(),
 		moves:      0,
 		config:     *config,
@@ -74,8 +90,6 @@ func (m model) openTile(position types.Position) {
 		return
 	}
 
-	x, y := position.GetCoords()
-
 	m.gameEngine.OpenTile(position)
 
 	if m.gameEngine.IsFinished() {
@@ -88,7 +102,8 @@ func (m model) openTile(position types.Position) {
 	if err != nil {
 		panic(err)
 	}
-	m.tiles[x][y] = tileContent
+
+	m.tiles.SetTile(position, tileContent)
 
 	if count == 0 {
 		m.openSafeAroundTile(position)
@@ -142,7 +157,6 @@ func (m model) openAroundOpenTile(position types.Position) {
 			case tiles.FlaggedSafe, tiles.FlaggedMine, tiles.OpenSafe, tiles.OutOfBounds:
 				return
 			}
-			x, y := position.GetCoords()
 			m.gameEngine.OpenTile(position)
 
 			if m.gameEngine.IsFinished() {
@@ -156,7 +170,8 @@ func (m model) openAroundOpenTile(position types.Position) {
 			if err != nil {
 				panic(err)
 			}
-			m.tiles[x][y] = tileContent
+
+			m.tiles.SetTile(position, tileContent)
 			if count == 0 {
 				m.openSafeAroundTile(position)
 			}
@@ -166,29 +181,29 @@ func (m model) openAroundOpenTile(position types.Position) {
 }
 
 func (m model) MoveCursorUp() (model, tea.Cmd) {
-	if m.cursorPosition.X > 0 {
-		m.cursorPosition.X--
-	}
-
-	return m, nil
-}
-func (m model) MoveCursorDown() (model, tea.Cmd) {
-	if m.cursorPosition.X < uint16(m.gameEngine.GetWidth())-1 {
-		m.cursorPosition.X++
-	}
-
-	return m, nil
-}
-func (m model) MoveCursorRight() (model, tea.Cmd) {
 	if m.cursorPosition.Y < uint16(m.gameEngine.GetHeight())-1 {
 		m.cursorPosition.Y++
 	}
 
 	return m, nil
 }
-func (m model) MoveCursorLeft() (model, tea.Cmd) {
+func (m model) MoveCursorDown() (model, tea.Cmd) {
 	if m.cursorPosition.Y > 0 {
 		m.cursorPosition.Y--
+	}
+
+	return m, nil
+}
+func (m model) MoveCursorRight() (model, tea.Cmd) {
+	if m.cursorPosition.X < uint16(m.gameEngine.GetWidth())-1 {
+		m.cursorPosition.X++
+	}
+
+	return m, nil
+}
+func (m model) MoveCursorLeft() (model, tea.Cmd) {
+	if m.cursorPosition.X > 0 {
+		m.cursorPosition.X--
 	}
 	return m, nil
 }
@@ -198,14 +213,13 @@ func (m model) FlagTile() (model, tea.Cmd) {
 	}
 	m.moves++
 
-	x, y := m.cursorPosition.GetCoords()
 	m.gameEngine.FlagToggleTile(m.cursorPosition)
-	switch m.tiles[x][y] {
+	switch m.tiles.GetTile(m.cursorPosition) {
 	case tilecontent.Empty:
-		m.tiles[x][y] = tilecontent.Flag
+		m.tiles.SetTile(m.cursorPosition, tilecontent.Flag)
 		m.flags++
 	case tilecontent.Flag:
-		m.tiles[x][y] = tilecontent.Empty
+		m.tiles.SetTile(m.cursorPosition, tilecontent.Empty)
 		m.flags--
 	}
 
@@ -263,14 +277,6 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	return m, nil
 }
 
-func beautifyTimeDuration(duration time.Duration) string {
-	milliseconds := int(duration.Milliseconds()) % 100
-	seconds := int(duration.Seconds()) % 60
-	minutes := int(duration.Minutes()) % 60
-
-	return fmt.Sprintf("%d:%d,%d", minutes, seconds, milliseconds)
-}
-
 func (m model) View() string {
 
 	if m.gameEngine.IsFinished() {
@@ -282,17 +288,20 @@ func (m model) View() string {
 	s.WriteString(styles.HeaderStyle.Render(fmt.Sprintf("%v %v/%v", misc.AppName, m.flags, m.config.Mines)))
 
 	var lines strings.Builder
-	for x, row := range m.tiles {
+	for row := range m.config.Height {
+		y := (m.config.Height - 1 - row)
 		var line string
-		for y, tile := range row {
+		for col := range m.config.Width {
+			x := col
 			isFocused := uint16(x) == m.cursorPosition.X && uint16(y) == m.cursorPosition.Y
+			tile := m.tiles.GetTile(types.Position{X: x, Y: y})
 			renderedTile := tilerenderer.RenderTileByContent(tile, isFocused)
 			line += renderedTile
 		}
 		lines.WriteString("\n")
-		if x == 0 {
+		if row == 0 {
 			lines.WriteString(styles.BorderTop.Render(line))
-		} else if x == len(m.tiles)-1 {
+		} else if row == uint16(len(m.tiles)-1) {
 			lines.WriteString(styles.BorderBottom.Render(line))
 		} else {
 			lines.WriteString(line)
@@ -301,11 +310,9 @@ func (m model) View() string {
 
 	s.WriteString(lines.String())
 	s.WriteRune('\n')
-	timeSinceStart := time.Since(m.startTime)
 
-	beautifiedTime := beautifyTimeDuration(timeSinceStart)
-	tea.SetWindowTitle(fmt.Sprintf("%v - %v", misc.AppName, beautifiedTime))
-	fmt.Fprintf(&s, "time - %v", beautifiedTime)
+	formattedDuration := utils.FormatTime(time.Since(m.startTime))
+	fmt.Fprintf(&s, "time - %v", formattedDuration)
 
 	return styles.TableStyle.Render(s.String())
 
