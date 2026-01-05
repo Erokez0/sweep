@@ -2,14 +2,15 @@ package paths
 
 import (
 	"fmt"
+	"log"
 	"os"
 	"runtime"
 	consts "sweep/shared/consts/misc"
 )
 
 const (
-	unixBasePath    = "/home/%v/.config/" + consts.AppName + "/"
-	windowsBasePath = "C:/ProgramData/" + consts.AppName + "/"
+	unixBasePath    = "%v/.config/" + consts.AppName + "/"
+	windowsBasePath = "%v/AppData/Roaming/" + consts.AppName + "/"
 
 	configName        = "config.json"
 	configSchemaName  = "config.schema.json"
@@ -24,11 +25,17 @@ var (
 
 func init() {
 	var basePath string
+	
+	home, err := os.UserHomeDir()
+	if err != nil {
+		log.Fatalf("could not determine users home directory")
+	}
+
 	switch runtime.GOOS {
 	case "linux", "darwin":
-		basePath = fmt.Sprintf(unixBasePath, os.Getenv("USER"))
+		basePath = fmt.Sprintf(unixBasePath, home)
 	case "windows":
-		basePath = windowsBasePath
+		basePath = fmt.Sprintf(windowsBasePath, home)
 	}
 
 	ConfigPath = basePath + configName
