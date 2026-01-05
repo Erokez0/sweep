@@ -2,6 +2,7 @@ package config
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"log"
 	"os"
@@ -143,8 +144,8 @@ func LoadConfig(options *loadConfigOpts) *Config {
 			log.Fatalf("Could not read config %v\nDoes the file exist?", options.path)
 		}
 		err = json.Unmarshal(configBin, &config)
-		if err != nil {
-			log.Fatalf("Could not parse config %v\nCheck if you are using the right data types\n%v", options.path, string(configBin))
+		if errors.Is(err, &json.InvalidUnmarshalError{}) {
+			log.Fatalf("Could not parse config %v\nInvalid pointer", options.path)
 		}
 
 	} else if options.jsonString != "" {
