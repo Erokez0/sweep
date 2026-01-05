@@ -18,6 +18,12 @@ import (
 	gojsonschema "github.com/xeipuuv/gojsonschema"
 )
 
+var schema *any
+
+func init() {
+	schema = loadSchema(paths.ConfigSchemaPath)
+}
+
 type Defaults struct {
 	Width  uint16
 	Height uint16
@@ -37,10 +43,9 @@ type Config struct {
 	Cursor cursor.Cursor `json:"cursor"`
 }
 
-func (config *Config) validate() (bool, []string) {
+func (config *Config) Validate() (bool, []string) {
 	configLoader := gojsonschema.NewGoLoader(config)
 
-	schema := loadSchema(paths.ConfigSchemaPath)
 	schemaLoader := gojsonschema.NewGoLoader(schema)
 
 	errors := []string{}
@@ -86,7 +91,7 @@ func (config *Config) Apply() {
 		fmt.Println(themepreview.RenderThemePreview())
 		os.Exit(0)
 	}
-	// Ignoring errors cause they were 
+	// Ignoring errors cause they were
 	if val, ok := os.LookupEnv(envkeys.Height); ok {
 		parsed, _ := strconv.ParseUint(val, 10, 16)
 		config.Height = uint16(parsed)
@@ -106,6 +111,7 @@ func loadSchema(schemaPath string) *any {
 	if err != nil {
 		log.Fatalf("Could not read config schema %v\nDoes the file exist?", schemaPath)
 	}
+
 	schema := new(any)
 	err = json.Unmarshal(schemaBin, schema)
 	if err != nil {
@@ -115,20 +121,45 @@ func loadSchema(schemaPath string) *any {
 	return schema
 }
 
-func LoadConfig(configPath string) *Config {
-	configBin, err := os.ReadFile(configPath)
-	log.SetFlags(log.Lmsgprefix)
-	if err != nil {
-		log.Fatalf("Could not read config %v\nDoes the file exist?", configPath)
+type loadConfigOpts struct {
+	path       string
+	config     *Config
+	jsonString string
+}
+
+func LoadConfig(options *loadConfigOpts) *Config {
+	if options == nil {
+		log.Fatalf("no path of config struct provided, can not load config")
 	}
 
-	config := new(Config)
-	err = json.Unmarshal(configBin, config)
-	if err != nil {
-		log.Fatalf("Could not parse config %v\n", configPath)
+	flags.Flags{}.Apply()
+
+	var config *Config
+
+	if options.path != "" {
+		configBin, err := os.ReadFile(options.path)
+		log.SetFlags(log.Lmsgprefix)
+		if err != nil {
+			log.Fatalf("Could not read config %v\nDoes the file exist?", options.path)
+		}
+		err = json.Unmarshal(configBin, config)
+		if err != nil {
+			log.Fatalf("Could not parse config %v\nCheck if you are using the right data types", options.path)
+		}
+
+	} else if options.jsonString != "" {
+		json, err := gojsonschema.NewStringLoader(options.jsonString).LoadJSON()
+		if err != nil {
+			log.Fatalf("Could not parse config\n%v", err)
+		}
+		configJson := (json).(Config)
+		config = &configJson
+
+	} else {
+		config = options.config
 	}
 
-	isValid, errors := config.validate()
+	isValid, errors := config.Validate()
 
 	if !isValid {
 		fmt.Println("Your config has errors")
@@ -146,7 +177,7 @@ func LoadConfig(configPath string) *Config {
 func GetConfig() *Config {
 	config := new(Config)
 
-	config = LoadConfig(paths.ConfigPath)
+	config = LoadConfig(&loadConfigOpts{path: paths.ConfigPath})
 
 	return config
 }
