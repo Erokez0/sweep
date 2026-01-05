@@ -1,6 +1,8 @@
 package main
 
 import (
+	"fmt"
+
 	config "sweep/config"
 	gametui "sweep/tui/game-tui"
 	startscreen "sweep/tui/start-screen"
@@ -15,16 +17,14 @@ func main() {
 			startScreen := startscreen.CreateModel(conf)
 
 			if _, err := tea.NewProgram(startScreen, tea.WithAltScreen()).Run(); err != nil {
-				panic(err)
+				panic(fmt.Sprintf("could not start startscreen TUI: %v", err))
 			}
 		}
 
 		gameModel := gametui.CreateModel(conf)
 
 		if _, err := tea.NewProgram(gameModel, tea.WithAltScreen()).Run(); err != nil {
-			panic(err)
+			panic(fmt.Sprintf("could not start game TUI: %v", err))
 		}
-
 	}
-
 }
