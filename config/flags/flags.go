@@ -107,7 +107,7 @@ func (f Flags) Apply() {
 
 		switch arg {
 		case HELP:
-			fmt.Println(consts.HelpMessage)
+			fmt.Print(consts.HelpMessage)
 			os.Exit(0)
 
 		case THEME_PREVIEW, THEME_PREVIEW_SHORT:
