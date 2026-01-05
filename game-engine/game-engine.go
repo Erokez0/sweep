@@ -88,7 +88,7 @@ func (g *GameEngine) GetTile(position types.Position) types.Tile {
 	if x >= g.width || y >= g.height {
 		return tiles.OutOfBounds
 	}
-	return g.field[x][y]
+	return g.field[y][x]
 }
 
 func (g *GameEngine) setTile(position types.Position, tile types.Tile) {
@@ -97,7 +97,7 @@ func (g *GameEngine) setTile(position types.Position, tile types.Tile) {
 	}
 	if y > g.height {
 	}
-	g.field[x][y] = tile
+	g.field[y][x] = tile
 }
 func (g *GameEngine) FlagToggleTile(position types.Position) {
 	tile := g.GetTile(position)
@@ -167,11 +167,11 @@ func (g *GameEngine) SetFieldSize(width uint16, height uint16) {
 	g.width = width
 	g.height = height
 
-	field := make([][]types.Tile, g.width)
-	for x := range g.width {
-		field[x] = make([]types.Tile, g.height)
-		for y := range g.height {
-			field[x][y] = tiles.ClosedSafe
+	field := make([][]types.Tile, g.height)
+	for y := range g.height {
+		field[y] = make([]types.Tile, g.width)
+		for x := range g.width {
+			field[y][x] = tiles.ClosedSafe
 		}
 	}
 	g.field = field
