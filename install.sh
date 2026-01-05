@@ -155,7 +155,7 @@ fi
 
 rm -rf "$TEMP_DIR"
 
-CONFIG_BASE_URL="$REPO_URL/raw/main/"
+CONFIG_BASE_URL="$REPO_URL/raw/master/"
 
 CONFIG_FILES=("config.schema.json" "config.default.json")
 

@@ -24,13 +24,13 @@ To install [sweep](#sweep) run script dedicated to your system
 ### Windows
 
 ```powershell
-irm https://raw.githubusercontent.com/erokez0/sweep/main/install.ps1 | iex
+irm https://raw.githubusercontent.com/erokez0/sweep/master/install.ps1 | iex
 ```
 
 ### Linux / MacOS / BSD
 
 ```sh
-curl -fsSL https://raw.githubusercontent.com/erokez0/sweep/main/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/erokez0/sweep/master/install.sh | bash
 ```
 
 ## How to play

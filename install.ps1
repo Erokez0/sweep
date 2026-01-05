@@ -30,10 +30,8 @@ $BINARY_NAME = "$APP_NAME$EXT"
 Write-Host "Binary directory: $BIN_DIR"
 Write-Host "Config directory: $CONFIG_DIR"
 
-# Create directories
 New-Item -ItemType Directory -Force -Path $BIN_DIR, $CONFIG_DIR | Out-Null
 
-# Get version
 $REPO_URL = "https://github.com/$GITHUB_USERNAME/$APP_NAME"
 $VERSION = if ($env:VERSION) { $env:VERSION } else { "latest" }
 
@@ -42,12 +40,11 @@ if ($VERSION -eq "latest") {
         $releaseInfo = Invoke-RestMethod -Uri "https://api.github.com/repos/$GITHUB_USERNAME/$APP_NAME/releases/latest"
         $VERSION = $releaseInfo.tag_name
     } catch {
-        Write-Host "Warning: Could not fetch latest version, using v1.0.0" -ForegroundColor Yellow
-        $VERSION = "v1.0.0"
+        Write-Host "Warning: Could not fetch latest version, using v0.1.3" -ForegroundColor Yellow
+        $VERSION = "v0.1.3"
     }
 }
 
-# Download binary
 $BINARY_URL = "$REPO_URL/releases/download/$VERSION/${APP_NAME}-${OS}-${ARCH}${EXT}"
 $TEMP_BINARY = "$env:TEMP\$BINARY_NAME"
 
@@ -74,15 +71,12 @@ if ($fileSize -lt 1000) {
 
 Write-Host "Binary downloaded ($([math]::Round($fileSize/1KB, 2)) KB)" -ForegroundColor Green
 
-# Install binary
 $INSTALL_PATH = "$BIN_DIR\$BINARY_NAME"
 Copy-Item -Path $TEMP_BINARY -Destination $INSTALL_PATH -Force
 
-# Clean up
 Remove-Item -Path $TEMP_BINARY -Force -ErrorAction SilentlyContinue
 
-# Download config files if they don't exist
-$CONFIG_BASE_URL = "$REPO_URL/raw/main/"
+$CONFIG_BASE_URL = "$REPO_URL/raw/master/"
 $CONFIG_FILES = @("config.schema.json", "config.default.json")
 
 foreach ($file in $CONFIG_FILES) {
