@@ -144,7 +144,7 @@ func LoadConfig(options *loadConfigOpts) *Config {
 		}
 		err = json.Unmarshal(configBin, &config)
 		if err != nil {
-			log.Fatalf("Could not parse config %v\nCheck if you are using the right data types\n%v", options.path, string(configBin))
+		log.Fatalf("Could not parse config %v\nInvalid config reference\n", options.path)
 		}
 
 	} else if options.jsonString != "" {
