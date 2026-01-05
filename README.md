@@ -365,7 +365,6 @@ sweep --config-path
 
 Copies the [default config](#default-config-file) file to the location of the [main config](#config-file-path)
 
-
 ---
 
 #### Fill
@@ -453,8 +452,18 @@ Prints out the help message that is pretty much useless if you have already read
 
 This section is for those who would like to build sweep themselves
 
-The only build dependency for sweep is [go](https://go.dev/)
+The only build dependency for sweep is [go](https://go.dev/).
+So if you have go installed, the build process is pretty straightforward
+
+```sh
+go build
+```
+
+## Plans
+
+I 
 
 ## Contribution
 
 I am open for contribution, new ideas or issues 
+
