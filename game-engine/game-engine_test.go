@@ -105,11 +105,12 @@ func TestOpenTile(t *testing.T) {
 	safePosition := types.Position{X: 0, Y: 0}
 	g.SetMines(safePosition)
 
-	field := g.GetField()
-	for x := range field {
-		for y := range field[x] {
-			tile := field[x][y]
+	width, height := g.width, g.height
+
+	for y := range height {
+		for x := range width {
 			currentPosition := types.Position{X: uint16(x), Y: uint16(y)}
+			tile := g.GetTile(currentPosition)
 			var wanted types.Tile
 
 			if currentPosition == safePosition {
@@ -130,7 +131,7 @@ func TestOpenTile(t *testing.T) {
 				wanted = tiles.OpenMine
 			}
 
-			tile = field[x][y]
+			tile = g.GetTile(currentPosition)
 
 			if wanted != tile {
 				t.Errorf("tile at [%v, %v] should have been [%v] received [%v]", x, y, wanted, tile)
