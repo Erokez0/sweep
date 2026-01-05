@@ -449,6 +449,12 @@ sweep --H 25
 
 Prints out the help message that is pretty much useless if you have already read so much
 
+## Build
+
+This section is for those who would like to build sweep themselves
+
+The only build dependency for sweep is [go](https://go.dev/)
+
 ## Contribution
 
 I am open for contribution, new ideas or issues 
