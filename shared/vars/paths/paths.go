@@ -10,7 +10,7 @@ import (
 
 const (
 	unixBasePath    = "%v/.config/" + consts.AppName + "/"
-	windowsBasePath = "%v/AppData/Roaming/" + consts.AppName + "/"
+	windowsBasePath = "%v\\AppData\\Roaming\\" + consts.AppName + "/"
 
 	configName        = "config.json"
 	configSchemaName  = "config.schema.json"
@@ -25,7 +25,7 @@ var (
 
 func init() {
 	var basePath string
-	
+
 	home, err := os.UserHomeDir()
 	if err != nil {
 		log.Fatalf("could not determine users home directory")
