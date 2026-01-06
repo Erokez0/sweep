@@ -10,7 +10,7 @@ import (
 
 const (
 	unixBasePath    = "%v/.config/" + consts.AppName + "/"
-	windowsBasePath = "%v\\AppData\\Roaming\\" + consts.AppName + "/"
+	windowsBasePath = "%v\\AppData\\Roaming\\" + consts.AppName + "\\"
 
 	configName        = "config.json"
 	configSchemaName  = "config.schema.json"
