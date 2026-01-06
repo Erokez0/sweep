@@ -459,9 +459,6 @@ So if you have go installed, the build process is pretty straightforward
 go build
 ```
 
-## Plans
-
-I 
 
 ## Contribution
 
