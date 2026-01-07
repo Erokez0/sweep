@@ -22,44 +22,43 @@ const (
 	Flag
 	WrongFlag
 	Empty
-	
 
-	mineString = "mine"
-	flagString = "flag"
-	emptyString = "empty"
+	mineString      = "mine"
+	flagString      = "flag"
+	emptyString     = "empty"
 	wrongFlagString = "wrong flag"
 )
 
 func (tc TileContent) String() string {
 	switch tc {
 	case Zero:
-		return "0"
+		return glyphs.Zero
 	case One:
-		return "1"
+		return glyphs.One
 	case Two:
-		return "2"
+		return glyphs.Two
 	case Three:
-		return "3"
+		return glyphs.Three
 	case Four:
-		return "4"
+		return glyphs.Four
 	case Five:
-		return "5"
+		return glyphs.Five
 	case Six:
-		return "6"
+		return glyphs.Six
 	case Seven:
-		return "7"
+		return glyphs.Seven
 	case Eight:
-		return "8"
+		return glyphs.Eight
 	case Mine:
-		return glyphs.MINE
+		return glyphs.Mine
 	case Flag:
-		return glyphs.FLAG
+		return glyphs.Flag
 	case WrongFlag:
-		return glyphs.WRONG_FLAG
+		return glyphs.WrongFlag
 	case Empty:
-		return glyphs.EMPTY
-	default: 
-	panic("unknown tile content key")
+		return glyphs.Empty
+	default:
+		panic("unknown tile content key")
 	}
 }
 
@@ -91,7 +90,7 @@ func FromString(str string) (TileContent, error) {
 		return WrongFlag, nil
 	case emptyString, Empty.String():
 		return Empty, nil
-	default: 
+	default:
 		return *new(TileContent), fmt.Errorf("\"%v\" is not a valid tile content", str)
 	}
 }
@@ -116,7 +115,8 @@ func FromNumber(n byte) (TileContent, error) {
 		return Seven, nil
 	case 8:
 		return Eight, nil
-	default: 
-	return *new(TileContent), fmt.Errorf("\"%v\" is not a valid tile content number", n)
+	default:
+		return *new(TileContent), fmt.Errorf("\"%v\" is not a valid tile content number", n)
 	}
 }
+

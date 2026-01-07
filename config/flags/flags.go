@@ -130,11 +130,11 @@ func (f Flags) Apply() {
 			os.Setenv(envkeys.Mines, getFlagArgument(args, ix))
 
 		case ASCII, ASCII_SHORT:
-			glyphs.MINE = "M"
+			glyphs.Mine = "M"
 
-			glyphs.FLAG = "F"
+			glyphs.Flag = "F"
 
-			glyphs.WRONG_FLAG = "W"
+			glyphs.WrongFlag = "W"
 
 		case FILL, FILL_SHORT:
 			styles.SetFill(true)

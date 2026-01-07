@@ -1,10 +1,21 @@
 package glyphs
 
 var (
-	WRONG_FLAG = "󱣮"
-	FLAG       = "󰈻"
-	MINE       = "󰚑"
-	EMPTY      = " "
-	CursorLeftHalf = "["
+	WrongFlag = "󱣮"
+	Flag      = "󰈻"
+	Mine      = "󰚑"
+	Empty     = " "
+
+	Zero  = "x"
+	One   = "1"
+	Two   = "2"
+	Three = "3"
+	Four  = "4"
+	Five  = "5"
+	Six   = "6"
+	Seven = "7"
+	Eight = "8"
+
+	CursorLeftHalf  = "["
 	CursorRightHalf = "]"
 )

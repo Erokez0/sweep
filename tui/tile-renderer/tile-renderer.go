@@ -16,10 +16,6 @@ func RenderTileByContent(tileContent tilecontent.TileContent, isFocused bool) st
 	style := styles.TileStyles[tileContent]
 	template := style.Render("%v%v%v")
 
-	switch stringTileContent {
-	case "0":
-		stringTileContent = "x"
-	}
 	stringTileContent = style.Render(stringTileContent)
 
 	leftCursorHalf := style.Render(" ")
