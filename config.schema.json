@@ -38,6 +38,11 @@
           "$ref": "#/definitions/key"
         }
       ]
+    },
+    "glyph": {
+      "type": "string",
+      "maxLength": 1,
+      "minLength": 1
     }
   },
   "properties": {
@@ -166,6 +171,53 @@
           "$ref": "#/definitions/color"
         }
       }
+    },
+    "glyphs": {
+      "type": "object",
+      "properties": {
+        "0": {
+          "$ref": "#/definitions/glyph"
+        },
+        "1": {
+          "$ref": "#/definitions/glyph"
+        },
+        "2": {
+          "$ref": "#/definitions/glyph"
+        },
+        "3": {
+          "$ref": "#/definitions/glyph"
+        },
+        "4": {
+          "$ref": "#/definitions/glyph"
+        },
+        "5": {
+          "$ref": "#/definitions/glyph"
+        },
+        "6": {
+          "$ref": "#/definitions/glyph"
+        },
+        "7": {
+          "$ref": "#/definitions/glyph"
+        },
+        "8": {
+          "$ref": "#/definitions/glyph"
+        },
+        "flag": {
+          "$ref": "#/definitions/glyph"
+        },
+        "wrong flag": {
+          "$ref": "#/definitions/glyph"
+        },
+        "mine": {
+          "$ref": "#/definitions/glyph"
+        },
+        "empty": {
+          "$ref": "#/definitions/glyph"
+        }
+      }
     }
-  }
+  },
+  "required": [
+    "bindings"
+  ]
 }
