@@ -11,6 +11,7 @@ import (
 	colors "sweep/config/colors"
 	cursor "sweep/config/cursor"
 	flags "sweep/config/flags"
+	"sweep/config/glyphs"
 	envkeys "sweep/shared/consts/env-keys"
 	paths "sweep/shared/vars/paths"
 	themepreview "sweep/tui/theme-preview"
@@ -35,12 +36,12 @@ type Config struct {
 	Defaults Defaults          `json:"defaults"`
 	Colors   colors.Colors     `json:"colors,omitempty"`
 	Bindings bindings.Bindings `json:"bindings,omitempty"`
+	Cursor   cursor.Cursor     `json:"cursor"`
+	Glyphs   glyphs.Glyphs     `json:"glyphs"`
 
 	Mines  uint16 `json:"mines,omitempty"`
 	Width  uint16 `json:"width,omitempty"`
 	Height uint16 `json:"height,omitempty"`
-
-	Cursor cursor.Cursor `json:"cursor"`
 }
 
 func (config *Config) Validate() (bool, []string) {
@@ -78,20 +79,26 @@ func (config *Config) Validate() (bool, []string) {
 		errors = append(errors, bindingsErrors...)
 	}
 
+	if isValid, glyphsErrors := config.Glyphs.Validate(); !isValid {
+		errors = append(errors, glyphsErrors...)
+	}
+
 	return len(errors) == 0, errors
 }
 
 func (config *Config) Apply() {
-	config.Flags.Apply()
-	config.Colors.Apply()
 	config.Cursor.Apply()
 	config.Bindings.Apply()
+	config.Glyphs.Apply()
+	config.Colors.Apply()
+	config.Flags.Apply()
 
 	if val, ok := os.LookupEnv(envkeys.Preview); ok && val == "true" {
 		fmt.Println(themepreview.RenderThemePreview())
 		os.Exit(0)
 	}
-	// Ignoring errors cause they were
+
+	// Ignoring errors cause they were accounted for during validation
 	if val, ok := os.LookupEnv(envkeys.Height); ok {
 		parsed, _ := strconv.ParseUint(val, 10, 16)
 		config.Height = uint16(parsed)
@@ -144,7 +151,7 @@ func LoadConfig(options *loadConfigOpts) *Config {
 		}
 		err = json.Unmarshal(configBin, &config)
 		if err != nil {
-		log.Fatalf("Could not parse config %v\nInvalid config reference\n", options.path)
+			log.Fatalf("Could not parse config %v\nInvalid config reference\n", options.path)
 		}
 
 	} else if options.jsonString != "" {
