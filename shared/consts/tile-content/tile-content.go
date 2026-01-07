@@ -2,7 +2,8 @@ package tilecontent
 
 import (
 	"fmt"
-	"sweep/shared/vars/glyphs"
+
+	glyphs "sweep/shared/vars/glyphs"
 )
 
 type TileContent uint16
@@ -22,6 +23,17 @@ const (
 	Flag
 	WrongFlag
 	Empty
+
+	zeroString = "0"
+	oneString = "1"
+	twoString = "2"
+	threeString = "3"
+	fourString = "4"
+	fiveString = "5"
+	sixString = "6"
+	sevenString = "7"
+	eightString = "8"
+
 
 	mineString      = "mine"
 	flagString      = "flag"
@@ -64,23 +76,23 @@ func (tc TileContent) String() string {
 
 func FromString(str string) (TileContent, error) {
 	switch str {
-	case Zero.String():
+	case zeroString, Zero.String():
 		return Zero, nil
-	case One.String():
+	case oneString, One.String():
 		return One, nil
-	case Two.String():
+	case twoString, Two.String():
 		return Two, nil
-	case Three.String():
+	case threeString, Three.String():
 		return Three, nil
-	case Four.String():
+	case fourString, Four.String():
 		return Four, nil
-	case Five.String():
+	case fiveString, Five.String():
 		return Five, nil
-	case Six.String():
+	case sixString, Six.String():
 		return Six, nil
-	case Seven.String():
+	case sevenString, Seven.String():
 		return Seven, nil
-	case Eight.String():
+	case eightString, Eight.String():
 		return Eight, nil
 	case mineString, Mine.String():
 		return Mine, nil
@@ -120,3 +132,33 @@ func FromNumber(n byte) (TileContent, error) {
 	}
 }
 
+func SetGlyph(tileContent TileContent, glyph string) {
+	switch tileContent {
+	case Zero:
+		glyphs.Zero = glyph
+	case One:
+		glyphs.One = glyph
+	case Two:
+		glyphs.Two = glyph
+	case Three:
+		glyphs.Three = glyph
+	case Four:
+		glyphs.Four = glyph
+	case Five:
+		glyphs.Five = glyph
+	case Six:
+		glyphs.Six = glyph
+	case Seven:
+		glyphs.Seven = glyph
+	case Eight:
+		glyphs.Eight = glyph
+	case Mine:
+		glyphs.Mine = glyph
+	case Flag:
+		glyphs.Flag = glyph
+	case WrongFlag:
+		glyphs.WrongFlag = glyph
+	case Empty:
+		glyphs.Empty = glyph
+	}
+}

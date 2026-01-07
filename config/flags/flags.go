@@ -7,6 +7,7 @@ import (
 
 	envkeys "sweep/shared/consts/env-keys"
 	consts "sweep/shared/consts/misc"
+	tilecontent "sweep/shared/consts/tile-content"
 	types "sweep/shared/types"
 	glyphs "sweep/shared/vars/glyphs"
 	paths "sweep/shared/vars/paths"
@@ -130,11 +131,17 @@ func (f Flags) Apply() {
 			os.Setenv(envkeys.Mines, getFlagArgument(args, ix))
 
 		case ASCII, ASCII_SHORT:
-			glyphs.Mine = "M"
-
-			glyphs.Flag = "F"
-
-			glyphs.WrongFlag = "W"
+			tilecontent.SetGlyph(tilecontent.Mine, "M")
+			tilecontent.SetGlyph(tilecontent.Flag, "M")
+			tilecontent.SetGlyph(tilecontent.WrongFlag, "M")
+			tilecontent.SetGlyph(tilecontent.Empty, " ")
+			for n := range byte(9) {
+				tileContent, err := tilecontent.FromNumber(n)
+				if err != nil {
+					panic(err)
+				}
+				tilecontent.SetGlyph(tileContent, fmt.Sprint(n))
+			}
 
 		case FILL, FILL_SHORT:
 			styles.SetFill(true)
