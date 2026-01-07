@@ -1,10 +1,8 @@
 {
   "$schema": "./config.schema.json",
-
   "flags": [
     "--ascii"
   ],
-  
   "colors": {
     "0": "8",
     "1": "12",
@@ -20,17 +18,14 @@
     "flag": "15",
     "empty": null
   },
-  
   "mines": null,
   "height": null,
   "width": null,
-
   "defaults": {
     "mines": 0,
     "width": 0,
     "height": 0
   },
-
   "bindings": {
     "flag tile": [
       "x",
@@ -61,5 +56,20 @@
     "color": null,
     "left half": "[",
     "right half": "]"
+  },
+  "glyphs": {
+    "0": "x",
+    "1": "1",
+    "2": "2",
+    "3": "3",
+    "4": "4",
+    "5": "5",
+    "6": "6",
+    "7": "7",
+    "8": "8",
+    "flag": "󰈻",
+    "wrong flag": "󱣮",
+    "mine": "󰚑",
+    "empty": " "
   }
 }
