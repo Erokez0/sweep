@@ -9,7 +9,6 @@ import (
 	consts "sweep/shared/consts/misc"
 	tilecontent "sweep/shared/consts/tile-content"
 	types "sweep/shared/types"
-	glyphs "sweep/shared/vars/glyphs"
 	paths "sweep/shared/vars/paths"
 	styles "sweep/tui/styles"
 )
