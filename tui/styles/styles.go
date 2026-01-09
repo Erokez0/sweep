@@ -6,9 +6,9 @@ import (
 	lipgloss "github.com/charmbracelet/lipgloss"
 )
 
-func createTileStyle(color string) lipgloss.Style {
+func CreateTileStyle(color string) lipgloss.Style {
 	lpColor := lipgloss.Color(color)
-	if isFill {
+	if IsFill {
 		return tileStyle.Background(lpColor).Foreground(reverseAdaptiveColor)
 	}
 	return tileStyle.Foreground(lpColor).Background(adaptiveColor)
@@ -29,7 +29,7 @@ var (
 		Light: "FF",
 	}
 
-	isFill = false
+	IsFill = false
 	isCursorStyleSet = false
 
 	DimText    = zeroStyle
@@ -73,7 +73,7 @@ func SetFill(fill bool) {
 	if fill {
 		tileStyle = tileStyle.Background(adaptiveColor).Foreground(lipgloss.NoColor{})
 	}
-	isFill = fill
+	IsFill = fill
 }
 
 func SetCursorColor(color string) {
@@ -92,7 +92,7 @@ func RenderCursor(tileStyle *TileStyle, cursor string) string {
 }
 
 func SetTileColor(key tilecontent.TileContent, color string) {
-	newStyle := createTileStyle(color)
+	newStyle := CreateTileStyle(color)
 	TileStyles[key] = &newStyle
 }
 
