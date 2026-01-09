@@ -191,6 +191,17 @@ For each of them there may be set an unsigned 16 bit integer (0-65535) or null (
 
 ---
 
+##### Glyphs
+
+These options lets you control what character or glyph is used for each tile type.
+You can set any one character as a value for each key of tile type.
+
+For example:
+
+By default `0` tile, that tell you that there are no mines around it use "x". But you can change it setting the key of "0" in the glyphs section of the config to a preferred glyph.
+
+---
+
 #### Location
 
 The location of the config file depends on your operating system.
