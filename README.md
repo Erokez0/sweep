@@ -206,7 +206,7 @@ By default `0` tile, that tell you that there are no mines around it use "x". Bu
 
 The location of the config file depends on your operating system.
 
-For Windows it is `C:/Users/user/AppData/Roaming/sweep/`
+For Windows it is `C:/Users/user/AppData/Roaming/sweep/config.json`
 
 And for UNIX-based OSs it is `~/.config/sweep/config.json`
 
