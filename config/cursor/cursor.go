@@ -1,9 +1,10 @@
 package cursor
 
 import (
+	"fmt"
 	colors "sweep/config/colors"
-	"sweep/shared/vars/glyphs"
-	"sweep/tui/styles"
+	glyphs "sweep/shared/vars/glyphs"
+	styles "sweep/tui/styles"
 )
 
 type Cursor struct {
@@ -12,20 +13,29 @@ type Cursor struct {
 	RightHalf string       `json:"right half"`
 }
 
-func (c *Cursor) Validate() (bool, []string) {
-	errors := []string{}
+type CursorHalfTooLongError struct {
+	whichHalf string
+}
+
+func (e *CursorHalfTooLongError) Error() string {
+	return fmt.Sprintf("(cursor.%v half) cursor %v half must be one character", e.whichHalf, e.whichHalf)
+}
+
+func (c *Cursor) Validate() (bool, []error) {
+	errors := []error{}
 	if !c.Color.IsValid() {
-		errors = append(errors, "(cursor.color) cursor color does not match ANSI nor HEX RGB")
+		errors = append(errors, &colors.InvalidColorError{ConfigModule: "config", Option: "color", Value: c.Color})
 	}
 	if len(c.LeftHalf) > 1 {
-		errors = append(errors, "(cursor.left half) cursor left half is longer than one character")
+		errors = append(errors, &CursorHalfTooLongError{"left"})
 	}
 	if len(c.RightHalf) > 1 {
-		errors = append(errors, "(cursor.right half) cursor right half is longer than one character")
+		errors = append(errors, &CursorHalfTooLongError{"right"})
 	}
 
 	return len(errors) == 0, errors
 }
+
 func (c *Cursor) Apply() {
 	if c.Color.IsSet() {
 		styles.SetCursorColor(string(c.Color))

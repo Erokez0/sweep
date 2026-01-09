@@ -1,6 +1,7 @@
 package flags
 
 import (
+	"errors"
 	"fmt"
 	"os"
 	"strconv"
@@ -43,30 +44,67 @@ const (
 	HELP types.Flag = "--help"
 )
 
-func validateFlagUint16Argument(args []string, index int) (bool, []string) {
-	errors := []string{}
+type NoArgumentProvidedFlagError struct {
+	flag types.Flag
+}
+
+func (e *NoArgumentProvidedFlagError) Error() string {
+	return fmt.Sprintf("argument for flag \"%v\" was not provided", e.flag)
+}
+
+func (e *NoArgumentProvidedFlagError) Is(target error) bool {
+	return e.Error() == target.Error()
+}
+
+type MustBeUin16FlagError struct {
+	flag types.Flag
+}
+
+func (e *MustBeUin16FlagError) Error() string {
+	return fmt.Sprintf("argument for flag \"%v\" must be an unsigned 16 bit integer (0-65535)", e.flag)
+}
+
+func (e *MustBeUin16FlagError) Is(target error) bool {
+	return e.Error() == target.Error()
+}
+
+func validateFlagUint16Argument(args []string, index int) error {
+	flag := args[index]
+
 	if index+1 >= len(args) {
-		return false, []string{fmt.Sprintf("argument for flag \"%v\" was not provided", args[index])}
+		return &NoArgumentProvidedFlagError{flag}
 	}
 	val := args[index+1]
 	_, err := strconv.ParseUint(val, 10, 16)
 
 	if err != nil {
-		errors = append(errors, fmt.Sprintf("argument for flag \"%v\" must be a unsigned 16 bit integer (0-65535)", args[index]))
+		return &MustBeUin16FlagError{flag}
 	}
 
-	return len(errors) == 0, errors
+	return nil
 }
 
 func getFlagArgument(args []string, index int) string {
 	return args[index+1]
 }
 
-func (f Flags) Validate() (bool, []string) {
+type InvalidFlagError struct {
+	flag string
+}
+
+func (e *InvalidFlagError) Error() string {
+	return fmt.Sprintf("(flags) invalid flag - %v", e.flag)
+}
+
+func (e *InvalidFlagError) Is(target error) bool {
+	return e.Error() == target.Error()
+}
+
+func (f Flags) Validate() (bool, []error) {
 	skip := false
 	args := os.Args[1:]
 	flagList := append(args, f...)
-	errors := []string{}
+	errors := []error{}
 
 	for ix, arg := range flagList {
 		if skip {
@@ -77,8 +115,9 @@ func (f Flags) Validate() (bool, []string) {
 		switch arg {
 		case HEIGHT, HEIGHT_SHORT, WIDTH, WIDTH_SHORT, MINES, MINES_SHORT:
 			skip = true
-			if isValid, flagErrors := validateFlagUint16Argument(args, ix); !isValid {
-				errors = append(errors, flagErrors...)
+
+			if err := validateFlagUint16Argument(flagList, ix); err != nil {
+				errors = append(errors, err)
 			}
 		case ASCII, ASCII_SHORT,
 			FILL, FILL_SHORT, CONFIG, CONFIG_SHORT,
@@ -88,10 +127,57 @@ func (f Flags) Validate() (bool, []string) {
 
 			continue
 		default:
-			errors = append(errors, fmt.Sprintf("invalid flag \"%v\"", arg))
+			errors = append(errors, &InvalidFlagError{arg})
 		}
 	}
 	return len(errors) == 0, errors
+}
+
+type DefaultConfigReadError struct {
+	readFileErr error
+}
+
+func (e *DefaultConfigReadError) Error() string {
+	hint := "does the file exist?"
+	if errors.Is(e.readFileErr, os.ErrNotExist) {
+		hint = "does the file exist?"
+	}
+	if errors.Is(e.readFileErr, os.ErrPermission) {
+		hint = "does the program have permissions?"
+	}
+
+	return fmt.Sprintf("could not read the default config file at \"%v\": %v", paths.DefaultConfigPath, hint)
+}
+
+func (e *DefaultConfigReadError) Is(target error) bool {
+	return e.Error() == target.Error()
+}
+
+type ConfigWriteError struct {
+}
+
+func (e *ConfigWriteError) Error() string {
+	hint := "do you have the right permissions?"
+
+	return fmt.Sprintf("could not write the default config to \"%v\": %v", paths.ConfigPath, hint)
+}
+
+func (e *ConfigWriteError) Is(target error) bool {
+	return e.Error() == target.Error()
+}
+
+func ResetConfig() {
+	defaultConfig, err := os.ReadFile(paths.DefaultConfigPath)
+	if err != nil {
+		fmt.Print(&DefaultConfigReadError{})
+	}
+
+	err = os.WriteFile(paths.ConfigPath, defaultConfig, 0666)
+	if err != nil {
+		fmt.Print(&ConfigWriteError{})
+	}
+	fmt.Printf("the default config was copied to the main config file at %v", paths.ConfigPath)
+	os.Exit(0)
 }
 
 func (f Flags) Apply() {
@@ -134,32 +220,22 @@ func (f Flags) Apply() {
 			tilecontent.SetGlyph(tilecontent.Flag, "M")
 			tilecontent.SetGlyph(tilecontent.WrongFlag, "M")
 			tilecontent.SetGlyph(tilecontent.Empty, " ")
-			for n := range byte(9) {
-				tileContent, err := tilecontent.FromNumber(n)
-				if err != nil {
-					panic(err)
-				}
-				tilecontent.SetGlyph(tileContent, fmt.Sprint(n))
-			}
+
+			tilecontent.SetGlyph(tilecontent.Zero, "0")
+			tilecontent.SetGlyph(tilecontent.One, "1")
+			tilecontent.SetGlyph(tilecontent.Two, "2")
+			tilecontent.SetGlyph(tilecontent.Three, "3")
+			tilecontent.SetGlyph(tilecontent.Four, "4")
+			tilecontent.SetGlyph(tilecontent.Five, "5")
+			tilecontent.SetGlyph(tilecontent.Six, "6")
+			tilecontent.SetGlyph(tilecontent.Seven, "7")
+			tilecontent.SetGlyph(tilecontent.Eight, "8")
 
 		case FILL, FILL_SHORT:
 			styles.SetFill(true)
 
 		case DEFAULT_CONFIG, DEFAULT_CONFIG_SHORT:
-			defaultConfig, err := os.ReadFile(paths.DefaultConfigPath)
-
-			if err != nil {
-				fmt.Printf("could not read the default config file at %v\nDoes the file exist?", paths.DefaultConfigPath)
-				os.Exit(1)
-			}
-
-			err = os.WriteFile(paths.ConfigPath, defaultConfig, 0666)
-			if err != nil {
-				fmt.Printf("could not write the default config to %v\nDo you have the right permissions?", paths.ConfigPath)
-				os.Exit(1)
-			}
-			fmt.Printf("the default config was copied to the main config file at %v", paths.ConfigPath)
-			os.Exit(0)
+			ResetConfig()
 		}
 	}
 }

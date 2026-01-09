@@ -2,16 +2,18 @@ package config
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"log"
 	"os"
 	"strconv"
+	"strings"
 
 	bindings "sweep/config/bindings"
 	colors "sweep/config/colors"
 	cursor "sweep/config/cursor"
 	flags "sweep/config/flags"
-	"sweep/config/glyphs"
+	glyphs "sweep/config/glyphs"
 	envkeys "sweep/shared/consts/env-keys"
 	paths "sweep/shared/vars/paths"
 	themepreview "sweep/tui/theme-preview"
@@ -44,25 +46,47 @@ type Config struct {
 	Height uint16 `json:"height,omitempty"`
 }
 
-func (config *Config) Validate() (bool, []string) {
+type ConfigValidationError struct {
+	errors []error
+}
+
+func (e *ConfigValidationError) Error() string {
+	var msg strings.Builder
+	msg.WriteString("Your configuration has errors")
+	for index, err := range e.errors {
+		msg.WriteString(fmt.Sprintf("%v. %v", index+1, err))
+	}
+	return msg.String()
+}
+
+type GoJsonSchemaConfigValidationError struct {
+	err gojsonschema.ResultError
+}
+
+func (e *GoJsonSchemaConfigValidationError) Error() string {
+	return e.err.String()
+}
+
+func (config *Config) Validate() (bool, []error) {
 	configLoader := gojsonschema.NewGoLoader(config)
 
 	schemaLoader := gojsonschema.NewGoLoader(schema)
 
-	errors := []string{}
+	errors := []error{}
+
 	result, err := gojsonschema.Validate(schemaLoader, configLoader)
 	if err != nil {
-		log.Fatalf("%v\nProbable cause: config file does not exist", err.Error())
+		errors = append(errors, err)
 	}
 
 	if !result.Valid() {
-		schemaErrors := make([]string, len(result.Errors()))
-		for ix, error := range result.Errors() {
-			schemaErrors[ix] = error.String()
+		schemaErrors := make([]error, len(result.Errors()))
+		for ix, err := range result.Errors() {
+			schemaErrors[ix] = &GoJsonSchemaConfigValidationError{err}
 		}
 		errors = append(errors, schemaErrors...)
 	}
-
+	
 	if isValid, colorsErrors := config.Colors.Validate(); !isValid {
 		errors = append(errors, colorsErrors...)
 	}
@@ -134,9 +158,48 @@ type loadConfigOpts struct {
 	jsonString string
 }
 
-func LoadConfig(options *loadConfigOpts) *Config {
+type EmptyConfigLoadOptionsError struct{}
+
+func (e *EmptyConfigLoadOptionsError) Error() string {
+	return "empty config load options provided"
+}
+
+type ConfigReadFileError struct {
+	readFileErr error
+	configPath  string
+}
+
+func (e *ConfigReadFileError) Error() string {
+	return fmt.Sprintf("could not read config \"%v\": does the file exist?", e.configPath)
+}
+
+type ConfigParsingError struct {
+	unmarshalError error
+	configPath     string
+}
+
+func (e *ConfigParsingError) Error() string {
+	var errorMsg string
+	if errors.Is(e.unmarshalError, &json.SyntaxError{}) {
+		errorMsg = "invalid JSON syntax"
+	} else {
+		errorMsg = e.unmarshalError.Error()
+	}
+	return fmt.Sprintf("could not parse config \"%v\": %v", e.configPath, errorMsg)
+
+}
+
+type JsonStringLoadConfigError struct {
+	err error
+}
+
+func (e *JsonStringLoadConfigError) Error() string {
+	return fmt.Sprintf("could not parse config from string: %v", e.err)
+}
+
+func LoadConfig(options *loadConfigOpts) (*Config, error) {
 	if options == nil {
-		log.Fatalf("no path of config struct provided, can not load config")
+		return nil, &EmptyConfigLoadOptionsError{}
 	}
 
 	flags.Flags{}.Apply()
@@ -147,21 +210,19 @@ func LoadConfig(options *loadConfigOpts) *Config {
 		configBin, err := os.ReadFile(options.path)
 		log.SetFlags(log.Lmsgprefix)
 		if err != nil {
-			log.Fatalf("Could not read config %v\nDoes the file exist?", options.path)
+			return nil, &ConfigReadFileError{err, options.path}
 		}
 		err = json.Unmarshal(configBin, &config)
 		if err != nil {
-			log.Fatalf("Could not parse config %v\nInvalid config reference\n", options.path)
+			return nil, &ConfigParsingError{err, options.path}
 		}
-
 	} else if options.jsonString != "" {
 		json, err := gojsonschema.NewStringLoader(options.jsonString).LoadJSON()
 		if err != nil {
-			log.Fatalf("Could not parse config\n%v", err)
+			return nil, &JsonStringLoadConfigError{err}
 		}
 		configJson := (json).(Config)
 		config = &configJson
-
 	} else {
 		config = options.config
 	}
@@ -169,22 +230,20 @@ func LoadConfig(options *loadConfigOpts) *Config {
 	isValid, errors := config.Validate()
 
 	if !isValid {
-		fmt.Println("Your config has errors")
-		for k, v := range errors {
-			fmt.Printf("%v. %v\n", k+1, v)
-		}
-		os.Exit(1)
+		return nil, &ConfigValidationError{errors}
 	}
 
 	config.Apply()
 
-	return config
+	return config, nil
 }
 
 func GetConfig() *Config {
-	config := new(Config)
+	config, err := LoadConfig(&loadConfigOpts{path: paths.ConfigPath})
 
-	config = LoadConfig(&loadConfigOpts{path: paths.ConfigPath})
+	if err != nil {
+		log.Fatal(err)
+	}
 
 	return config
 }

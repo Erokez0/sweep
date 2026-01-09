@@ -7,11 +7,23 @@ import (
 
 type Glyphs map[string]string
 
-func (g Glyphs) Validate() (bool, []string) {
-	errors := make([]string, 0)
+type InvalidGlyphOption struct {
+	tileName string
+}
+
+func (e *InvalidGlyphOption) Error() string {
+	return fmt.Sprintf("(glyphs) %v is not a valid option", e.tileName)
+}
+
+func (e *InvalidGlyphOption) Is(target error) bool {
+	return e.Error() == target.Error()
+}
+
+func (g Glyphs) Validate() (bool, []error) {
+	errors := make([]error, 0)
 	for tileName := range g {
 		if _, err := tilecontent.FromString(tileName); err != nil {
-			errors = append(errors, fmt.Sprintf("(glyphs) %v is not a valid option of tile content", tileName))
+			errors = append(errors, &InvalidGlyphOption{tileName})
 		}
 	}
 

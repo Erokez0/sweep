@@ -12,21 +12,39 @@ type Bindings map[actions.Action][]string
 
 func (b Bindings) Apply() {
 	for action, bindings := range b {
-		for _, key  := range bindings {
+		for _, key := range bindings {
 			keyactionmap.KeyActionMap[key] = action
 		}
 	}
 }
 
-func (b Bindings) Validate() (bool, []string) {
-	var errors []string
+type InvalidActionError struct {
+	action actions.Action
+}
+
+func (e *InvalidActionError) Error() string {
+	return fmt.Sprintf("(bindings) %v is not a valid action", e.action)
+}
+
+type InvalidKeyPressPatternError struct {
+	action  actions.Action
+	index   int
+	binding string
+}
+
+func (e *InvalidKeyPressPatternError) Error() string {
+	return fmt.Sprintf("(bindings.%v.%v) %v does bot match key press pattern", e.action, e.index, e.binding)
+}
+
+func (b Bindings) Validate() (bool, []error) {
+	var errors []error
 	for action, bindings := range b {
 		if !actions.IsAction(string(action)) {
-			errors = append(errors, fmt.Sprintf("(bindings) \"%v\" is not a valid action", string(action)))
+			errors = append(errors, &InvalidActionError{action})
 		}
-		for ix, binding := range bindings {
-			if !regexes.KeyRegex.MatchString(binding) { 
-				errors = append(errors, fmt.Sprintf("(bindings.%v.%v) \"%v\" does not match key press pattern", action, ix, binding))
+		for index, binding := range bindings {
+			if !regexes.KeyRegex.MatchString(binding) {
+				errors = append(errors, &InvalidKeyPressPatternError{action, index, binding})
 			}
 		}
 	}
