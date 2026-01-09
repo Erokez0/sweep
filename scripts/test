@@ -1,0 +1,11 @@
+#!/bin/bash
+
+set -e
+
+go test --v --cover ./game-engine
+go test --v --cover ./config/flags
+go test --v --cover ./config/colors
+go test --v --cover ./config/cursor
+go test --v --cover ./config/glyphs
+go test --v --cover ./config/bindings
+go test --v --cover ./config
