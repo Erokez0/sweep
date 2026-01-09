@@ -3,7 +3,7 @@ name: Release
 on:
   push:
     tags:
-      - 'v*'
+      - "v*"
 
 permissions:
   contents: write
@@ -11,57 +11,59 @@ permissions:
 jobs:
   quality-checks:
     runs-on: ubuntu-latest
-    
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-        
+
       - name: Setup Go
         uses: actions/setup-go@v4
         with:
-          go-version: '1.25'
+          go-version: "1.25"
           cache: true
-        
+
       - name: Check dependencies
         run: |
           echo "Checking dependencies"
           go mod download
           go mod verify
-        
+
       - name: Run tests
         run: |
           echo "Running tests"
-          go test ./game-engine
-        
+          chmod +x ./scripts/build
+          ./scripts/test
+
   release:
     needs: quality-checks
     runs-on: ubuntu-latest
-    
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-        
+
       - name: Setup Go
         uses: actions/setup-go@v4
         with:
-          go-version: '1.25'
-        
+          go-version: "1.25"
+
       - name: Build binaries
         run: |
           echo "Building release binaries"
           chmod +x ./scripts/build
           ./scripts/build
-        
+
       - name: Create checksums
         run: |
           cd bin
           sha256sum * > sha256sums.txt
           echo "Checksums:"
           cat sha256sums.txt
-        
+
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v1
         with:
           name: Release ${{ github.ref_name }}
           files: bin/*
           generate_release_notes: true
+
