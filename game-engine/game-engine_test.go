@@ -1,7 +1,9 @@
 package gameengine
 
 import (
+	"errors"
 	"fmt"
+	"sync"
 	"testing"
 
 	tiles "sweep/shared/consts/tiles"
@@ -70,7 +72,7 @@ func TestCountNeighbouringMines(t *testing.T) {
 
 		result := g.CountNeighbouringMines(center)
 		if fmt.Sprint(result) != fmt.Sprint(expected) {
-			t.Errorf("[Assertion failed] %v != %v\nMineCount: %v\n", result, expected, g.MineCount)
+			t.Errorf("[Assertion failed] %v != %v\nmines: %v\n", result, expected, g.mines)
 			t.Error(g.field)
 		}
 	}
@@ -162,38 +164,44 @@ func TestSetTile(t *testing.T) {
 	}
 }
 
-func TestAllFieldSizesAndMineCounts(t *testing.T) {
-	g := GameEngine{}
-	for width := range 10_000_000 {
-		for height := range 10_000_000 {
-			for Mines := range 10_000_000 {
+func TestSetAllFieldParameters(t *testing.T) {
+	var wg sync.WaitGroup
+	for width := range 25 {
+		for height := range 25 {
+			for mines := range 25 {
+				g := GameEngine{}
+				var expected error
+				if width == 0 {
+					expected = &FieldParameterCannotBe0Error{"field width"}
+				} else if height == 0 {
+					expected = &FieldParameterCannotBe0Error{"field height"}
+				}
 
-				defer func() {
-					r := recover()
-					if width == 0 || height == 0 || Mines >= width*height && r != nil {
-						return
-					}
-					if width == 0 && r == nil {
-						t.Errorf("Width == 0 but has not panicked %v", r)
-					}
-					if height == 0 && r == nil {
-						t.Error("height == 0 but has not panicked")
-					}
-					if Mines >= width*height && r == nil {
-						t.Error("Mine count >= width * height but has not panicked")
-					}
-					if r != nil {
-						t.Errorf("Was not supposed to panic\n%v", r)
-					}
-				}()
+				actual := g.SetFieldSize(uint16(width), uint16(height))
+				if !errors.Is(actual, expected) {
+					t.Errorf("[Assertion failed]\nExpected errors: %v\nActual error: %v\nmines - %v, height - %v, width - %v", expected, actual, mines, height, width)
+					continue
+				}
+				if width == 0 || height == 0 {
+					continue
+				}
 
-				g.SetFieldSize(uint16(width), uint16(height))
-				g.SetMineCount(uint16(Mines))
-				g.SetMines(types.Position{})
+				if mines == 0 {
+					expected = &FieldParameterCannotBe0Error{"mine count"}
+				} else if width != 0 && height != 0 && mines >= height*width {
+					expected = &TooManyMinesError{}
+				}
 
+				actual = g.SetMineCount(uint16(mines))
+
+				if !errors.Is(actual, expected) {
+					t.Errorf("[Assertion failed]\nExpected errors: %v\nActual error: %v\nmines - %v, height - %v, width - %v", expected, actual, mines, height, width)
+					continue
+				}
 			}
 		}
 	}
+	wg.Wait()
 }
 
 func TestSetMines(t *testing.T) {
@@ -205,10 +213,10 @@ func TestSetMines(t *testing.T) {
 			if height < 2 {
 				continue
 			}
-			for MineCount := range (height * width) - 1 {
+			for mineCount := range (height * width) - 1 {
 				g := GameEngine{}
 				g.SetFieldSize(uint16(width), uint16(height))
-				g.SetMineCount(uint16(MineCount))
+				g.SetMineCount(uint16(mineCount))
 				position := types.Position{
 					X: uint16(width / 2),
 					Y: uint16(height / 2),
@@ -223,14 +231,14 @@ func TestSetMines(t *testing.T) {
 						}
 					}
 				}
-				if uint16(count) != g.MineCount {
-					t.Errorf("[Assertion failed] %v != %v\nreal Mine count != wanted Mine count", count, g.MineCount)
+				if uint16(count) != g.mines {
+					t.Errorf("[Assertion failed] %v != %v\nreal mine count != wanted mine count", count, g.mines)
 				}
 				if g.GetTile(position) != tiles.ClosedSafe {
 					t.Errorf("[Assertion failed] %v - %v is not safe!", position.X, position.Y)
 				}
-				if g.MineCount != uint16(MineCount) {
-					t.Errorf("[Assertion failed] %v != %v\ngameEngine.MineCount != set MineCount", g.MineCount, MineCount)
+				if g.mines != uint16(mineCount) {
+					t.Errorf("[Assertion failed] %v != %v\ngameEngine.mines != set mine count", g.mines, mineCount)
 				}
 			}
 		}
@@ -239,43 +247,38 @@ func TestSetMines(t *testing.T) {
 
 func TestGetWidth(t *testing.T) {
 	const height uint16 = 2
-	for width := range 10_000_000 {
-		if width < 1 {
-			defer func() {
-				r := recover()
-				if r == nil {
-					t.Errorf("[Error expected] width == %v, must not be 0", width)
-				}
-			}()
+	for width := range uint16(255) {
+		if width == 0 {
+			continue
 		}
 		g := GameEngine{}
 
-		expected := uint16(width)
-		g.SetFieldSize(expected, height)
+		expected := width
+
+		err := g.SetFieldSize(width, expected)
+		if err != nil {
+			t.Fatal(err)
+		}
 
 		actual := g.GetWidth()
 		if expected != actual {
 			t.Errorf("[Assertion failed] %v != %v\ngameEngine.GetWidth() != width", actual, expected)
 		}
-		if expected != g.width {
-			t.Errorf("[Assertion failed] %v != %v\ngameEngine.width != width", g.width, expected)
-		}
 	}
 }
 func TestGetHeight(t *testing.T) {
 	const width uint16 = 2
-	for height := range 10_000_000 {
-		if height < 1 {
-			defer func() {
-				r := recover()
-				if r == nil {
-					t.Errorf("[Error expected] height == %v, must not be 0", height)
-				}
-			}()
+	for height := range uint16(255) {
+		if height == 0 {
+			continue
 		}
+
 		g := GameEngine{}
-		expected := uint16(height)
-		g.SetFieldSize(width, expected)
+		expected := height
+		err := g.SetFieldSize(width, expected)
+		if err != nil {
+			t.Fatal(err)
+		}
 
 		actual := g.GetHeight()
 		if expected != actual {

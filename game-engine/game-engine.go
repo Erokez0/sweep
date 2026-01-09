@@ -1,6 +1,7 @@
 package gameengine
 
 import (
+	"fmt"
 	"math/rand"
 	"slices"
 	"sync"
@@ -15,7 +16,7 @@ var _ types.IGameEngine = (*GameEngine)(nil)
 type GameEngine struct {
 	types.IGameEngine
 	isFinished       bool
-	MineCount        uint16
+	mines uint16
 	width            uint16
 	height           uint16
 	flaggedMineCount uint16
@@ -26,11 +27,35 @@ type GameEngine struct {
 func (g *GameEngine) GetField() [][]types.Tile {
 	return g.field
 }
-func (g *GameEngine) SetMineCount(count uint16) {
-	if g.height != 0 && g.width != 0 && count >= g.width*g.height {
-		panic("Mine count must be less than field size squared")
+
+type TooManyMinesError struct {}
+func (e *TooManyMinesError) Error() string {
+	return "mine count must be less than field width multiplied by field height"
+}
+func (e *TooManyMinesError) Is(target error) bool {
+	return target.Error() == e.Error()
+}
+
+type FieldParameterCannotBe0Error struct {
+	param string
+}
+func (e *FieldParameterCannotBe0Error) Error() string {
+	return fmt.Sprintf("%v can not be 0", e.param)
+}
+func (e *FieldParameterCannotBe0Error) Is(target error) bool {
+	return target.Error() == e.Error()
+}
+
+func (g *GameEngine) SetMineCount(count uint16) error {
+	if count == 0 {
+		return &FieldParameterCannotBe0Error{"mine count"}
 	}
-	g.MineCount = count
+	if count >= g.width * g.height {
+		return &TooManyMinesError{}
+	}
+	g.mines = count
+	
+	return nil
 }
 
 func (g *GameEngine) CountNeighbouringMines(position types.Position) byte {
@@ -71,8 +96,6 @@ func (g *GameEngine) CountNeighbouringMines(position types.Position) byte {
 
 }
 
-// First return value is the content of the tile to show in the UI
-// Second return value is whether the tile is a Mine
 func (g *GameEngine) OpenTile(position types.Position) {
 	switch g.GetTile(position) {
 	case tiles.ClosedMine, tiles.FlaggedMine, tiles.OpenMine, tiles.OutOfBounds:
@@ -99,6 +122,7 @@ func (g *GameEngine) setTile(position types.Position, tile types.Tile) {
 	}
 	g.field[y][x] = tile
 }
+// Second return value is whether the tile is a Mine
 func (g *GameEngine) FlagToggleTile(position types.Position) {
 	tile := g.GetTile(position)
 	switch tile {
@@ -117,7 +141,7 @@ func (g *GameEngine) FlagToggleTile(position types.Position) {
 		g.flaggedCount--
 		g.setTile(position, tiles.ClosedSafe)
 	}
-	g.isFinished = g.flaggedMineCount == g.MineCount && g.flaggedCount == g.flaggedMineCount
+	g.isFinished = g.flaggedMineCount == g.mines && g.flaggedCount == g.flaggedMineCount
 }
 
 // gameEngine.SetMines() sets the Mines on the field
@@ -130,7 +154,7 @@ func (g *GameEngine) SetMines(safeTile types.Position) {
 
 	var wg sync.WaitGroup
 
-	for len(MinePositions) < int(g.MineCount) {
+	for len(MinePositions) < int(g.mines) {
 		x, y := uint16(rand.Intn(int(maxX+minValue))), uint16(rand.Intn(int(maxY+minValue)))
 		currentPosition := types.Position{X: x, Y: y}
 		if currentPosition != safeTile && !slices.Contains(MinePositions, currentPosition) {
@@ -145,23 +169,23 @@ func (g *GameEngine) SetMines(safeTile types.Position) {
 	}
 	wg.Wait()
 
-	g.MineCount = uint16(len(MinePositions))
+	g.mines= uint16(len(MinePositions))
 }
 
 func (g *GameEngine) IsFinished() bool {
 	return g.isFinished
 }
 
-func (g *GameEngine) SetFieldSize(width uint16, height uint16) {
+func (g *GameEngine) SetFieldSize(width uint16, height uint16) error {
 	if width == 0 {
-		panic("field width cannot be 0")
+		return &FieldParameterCannotBe0Error{"field width"}
 	}
 	if height == 0 {
-		panic("field height cannot be 0")
+		return &FieldParameterCannotBe0Error{"field height"}
 	}
 
-	if g.MineCount >= width*height {
-		panic("width multiplied by height must be more than Mine count")
+	if g.mines != 0 && g.mines>= width*height {
+		return &TooManyMinesError{}
 	}
 
 	g.width = width
@@ -175,6 +199,8 @@ func (g *GameEngine) SetFieldSize(width uint16, height uint16) {
 		}
 	}
 	g.field = field
+	
+	return nil
 }
 
 func (g *GameEngine) GetWidth() uint16 {

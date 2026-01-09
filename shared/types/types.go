@@ -2,7 +2,6 @@ package types
 
 type Tile byte
 
-
 type Position struct {
 	X uint16
 	Y uint16
@@ -18,8 +17,8 @@ type IGameEngine interface {
 	GetTile(Position) Tile
 	IsFinished() bool
 	GetField() [][]Tile
-	SetFieldSize(uint16, uint16)
-	SetMineCount(uint16)
+	SetFieldSize(uint16, uint16) error
+	SetMineCount(uint16) error
 	SetMines(Position)
 	CountNeighbouringMines(Position) byte
 
