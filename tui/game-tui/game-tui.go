@@ -58,8 +58,14 @@ type model struct {
 
 func CreateModel(config *config.Config) model {
 	gameEngine := gameengine.GameEngine{}
-	gameEngine.SetMineCount(config.Mines)
-	gameEngine.SetFieldSize(config.Width, config.Height)
+	err := gameEngine.SetFieldSize(config.Width, config.Height)
+	if err != nil {
+		fmt.Println(err)
+	}
+	err = gameEngine.SetMineCount(config.Mines)
+	if err != nil {
+		fmt.Println(err)
+	}
 
 	return model{
 		cursorPosition: types.Position{
