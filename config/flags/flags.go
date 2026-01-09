@@ -217,8 +217,8 @@ func (f Flags) Apply() {
 
 		case ASCII, ASCII_SHORT:
 			tilecontent.SetGlyph(tilecontent.Mine, "M")
-			tilecontent.SetGlyph(tilecontent.Flag, "M")
-			tilecontent.SetGlyph(tilecontent.WrongFlag, "M")
+			tilecontent.SetGlyph(tilecontent.Flag, "F")
+			tilecontent.SetGlyph(tilecontent.WrongFlag, "W")
 			tilecontent.SetGlyph(tilecontent.Empty, " ")
 
 			tilecontent.SetGlyph(tilecontent.Zero, "x")
