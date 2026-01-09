@@ -221,7 +221,7 @@ func (f Flags) Apply() {
 			tilecontent.SetGlyph(tilecontent.WrongFlag, "M")
 			tilecontent.SetGlyph(tilecontent.Empty, " ")
 
-			tilecontent.SetGlyph(tilecontent.Zero, "0")
+			tilecontent.SetGlyph(tilecontent.Zero, "x")
 			tilecontent.SetGlyph(tilecontent.One, "1")
 			tilecontent.SetGlyph(tilecontent.Two, "2")
 			tilecontent.SetGlyph(tilecontent.Three, "3")
