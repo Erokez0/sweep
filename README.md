@@ -223,11 +223,9 @@ The default config file only serves a purpose as en example of how you may confi
 ```JSON
 {
   "$schema": "./config.schema.json",
-
   "flags": [
     "--ascii"
   ],
-  
   "colors": {
     "0": "8",
     "1": "12",
@@ -243,50 +241,62 @@ The default config file only serves a purpose as en example of how you may confi
     "flag": "15",
     "empty": null
   },
-  
   "mines": null,
   "height": null,
   "width": null,
-
   "defaults": {
     "mines": 0,
     "width": 0,
     "height": 0
   },
-
   "bindings": {
-    "flagTile": [
+    "flag tile": [
       "x",
       "\\"
     ],
-    "openTile": [
+    "open tile": [
       "z",
       "enter"
     ],
-    "moveCursorDown": [
+    "move cursor down": [
       "j",
       "s"
     ],
-    "moveCursorUp": [
+    "move cursor up": [
       "k",
       "w"
     ],
-    "moveCursorRight": [
+    "move cursor right": [
       "l",
       "d"
     ],
-    "moveCursorLeft": [
+    "move cursor left": [
       "h",
       "a"
     ]
   },
-
   "cursor": {
     "color": null,
     "left half": "[",
     "right half": "]"
+  },
+  "glyphs": {
+    "0": "x",
+    "1": "1",
+    "2": "2",
+    "3": "3",
+    "4": "4",
+    "5": "5",
+    "6": "6",
+    "7": "7",
+    "8": "8",
+    "flag": "󰈻",
+    "wrong flag": "󱣮",
+    "mine": "󰚑",
+    "empty": " "
   }
 }
+
 ```
 
 This is how it would look if you launch [theme preview](#theme-preview)
