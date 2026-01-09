@@ -239,3 +239,23 @@ func (f Flags) Apply() {
 		}
 	}
 }
+
+func  ApplyFromArgs() {
+	for _, arg := range os.Args[1:] {
+		switch arg {
+		case HELP:
+			fmt.Print(consts.HelpMessage)
+			os.Exit(0)
+
+		case THEME_PREVIEW, THEME_PREVIEW_SHORT:
+			os.Setenv(envkeys.Preview, "true")
+
+		case CONFIG, CONFIG_SHORT:
+			fmt.Printf("%v\n", paths.ConfigPath)
+			os.Exit(0)
+
+		case DEFAULT_CONFIG, DEFAULT_CONFIG_SHORT:
+			ResetConfig()
+		}
+	}
+}

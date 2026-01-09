@@ -202,7 +202,7 @@ func LoadConfig(options *loadConfigOpts) (*Config, error) {
 		return nil, &EmptyConfigLoadOptionsError{}
 	}
 
-	flags.Flags{}.Apply()
+	flags.ApplyFromArgs()
 
 	var config *Config
 
