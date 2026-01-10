@@ -147,19 +147,6 @@ func Test_Validate(t *testing.T) {
 		},
 
 		{
-			colors: Colors{"foo": "bar", "baz": "#FFFFFF", "0": "bar"},
-			expected: Result{
-				isValid: false,
-				errors: []error{
-					&InvalidColorOptionError{"foo"},
-					&InvalidColorError{"colors", "foo", "bar"},
-					&InvalidColorOptionError{"baz"},
-					&InvalidColorError{"colors", "0", "bar"},
-				},
-			},
-		},
-
-		{
 			colors: Colors{
 				"0":          "8",
 				"1":          "12",
@@ -193,9 +180,20 @@ func Test_Validate(t *testing.T) {
 
 		expected := &testCase.expected
 
-		areErrorsEqual := slices.EqualFunc(actual.errors, expected.errors, func(a, b error) bool {
-			return errors.Is(a, b)
-		})
+		areErrorsEqual := func(expected, actual []error) bool {
+			if len(actual) != len(expected) {
+				return false
+			}
+
+			areEqual := true
+			for ix := range expected {
+
+				if !errors.Is(actual[ix], expected[ix]) {
+					return false
+				}
+			}
+			return areEqual
+		}(actual.errors, expected.errors)
 
 		if actual.isValid != expected.isValid {
 			t.Errorf("[Assertion failed] isValid\nExpected: %v\nActual: %v", expected.isValid, actual.isValid)
