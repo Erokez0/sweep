@@ -2,7 +2,6 @@ package colors
 
 import (
 	"errors"
-	"slices"
 	"testing"
 
 	tilecontent "sweep/shared/consts/tile-content"
