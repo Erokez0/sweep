@@ -34,8 +34,6 @@ func RenderTileByType(tile types.Tile, tileContent tilecontent.TileContent) stri
 		tileContent = tilecontent.Flag
 	case tiles.FlaggedSafe:
 		tileContent = tilecontent.WrongFlag
-	case tiles.ClosedSafe, tiles.OpenSafe:
-		tileContent = tilecontent.Empty
 	}
 	return RenderTileByContent(tileContent, false)
 }
