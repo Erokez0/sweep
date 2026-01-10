@@ -4,12 +4,12 @@ import (
 	"errors"
 	"fmt"
 	"os"
-	envkeys "sweep/shared/consts/env-keys"
-	"sweep/shared/types"
-	"sweep/shared/vars/glyphs"
-	"sweep/shared/vars/paths"
-	"sweep/tui/styles"
 	"testing"
+
+	envkeys "sweep/shared/consts/env-keys"
+	types "sweep/shared/types"
+	glyphs "sweep/shared/vars/glyphs"
+	styles "sweep/tui/styles"
 )
 
 func Test_FlagUint16Argument_Error(t *testing.T) {
