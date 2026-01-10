@@ -240,7 +240,7 @@ func (f Flags) Apply() {
 	}
 }
 
-func  ApplyFromArgs() {
+func ApplyFromArgs() {
 	for _, arg := range os.Args[1:] {
 		switch arg {
 		case HELP:
@@ -259,3 +259,4 @@ func  ApplyFromArgs() {
 		}
 	}
 }
+
