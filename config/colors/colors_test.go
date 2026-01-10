@@ -257,7 +257,7 @@ func Test_Apply(t *testing.T) {
 		for key, color := range testCase {
 			expected := styles.CreateTileStyle(string(color)).Value()
 			tileContent, _ := tilecontent.FromString(key)
-			actual := styles.TileStyles[tileContent].Value()
+			actual := styles.GetTileStyle(tileContent).Value()
 			if actual != expected {
 				t.Errorf("[Assertion failed]\n%v should have been set to %v\n%v != %v", key, color, actual, expected)
 			}

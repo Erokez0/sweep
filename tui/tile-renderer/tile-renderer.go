@@ -11,12 +11,10 @@ import (
 )
 
 func RenderTileByContent(tileContent tilecontent.TileContent, isFocused bool) string {
-	stringTileContent := tileContent.String()
-
-	style := styles.TileStyles[tileContent]
+	style := styles.GetTileStyle(tileContent)
 	template := style.Render("%v%v%v")
 
-	stringTileContent = style.Render(stringTileContent)
+	stringTileContent := style.Render(tileContent.String())
 
 	leftCursorHalf := style.Render(" ")
 	rightCursorHalf := leftCursorHalf
