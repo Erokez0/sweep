@@ -243,9 +243,12 @@ func (m model) OpenTile() (model, tea.Cmd) {
 
 func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	if m.gameEngine.IsFinished() {
-		switch msg.(tea.KeyMsg).String() {
-		case "q", "ctrl+c":
-			os.Exit(0)
+		switch msg := msg.(type) {
+		case tea.KeyMsg:
+			switch msg.String() {
+			case "q", "ctrl+c":
+				os.Exit(0)
+			}
 		}
 		return m, tea.Quit
 	}
