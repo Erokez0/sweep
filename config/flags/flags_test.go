@@ -2,8 +2,13 @@ package flags
 
 import (
 	"errors"
+	"fmt"
 	"os"
+	envkeys "sweep/shared/consts/env-keys"
 	"sweep/shared/types"
+	"sweep/shared/vars/glyphs"
+	"sweep/shared/vars/paths"
+	"sweep/tui/styles"
 	"testing"
 )
 
@@ -143,6 +148,13 @@ func Test_Validate(t *testing.T) {
 				isValid: true,
 			},
 		},
+		{
+			args: []string{},
+			expected: Result{
+				errors:  []error{},
+				isValid: true,
+			},
+		},
 	}
 
 	for _, testCase := range testCases {
@@ -178,6 +190,174 @@ func Test_Validate(t *testing.T) {
 
 		if !areErrorsEqual {
 			t.Errorf("[Error equality check failed]\nExpected: %v\nActual: %v", expected.errors, actual.errors)
+		}
+	}
+}
+
+type FillFlagError struct {
+	flag types.Flag
+}
+
+func (e *FillFlagError) Error() string {
+	return fmt.Sprintf("The %v flag was expected to set fill for the styles", e.flag)
+}
+
+func (e *FillFlagError) Is(target error) bool {
+	return e.Error() == target.Error()
+}
+
+type AsciiFlagError struct {
+	flag       types.Flag
+	glyphKey   string
+	glyphValue string
+}
+
+func (e *AsciiFlagError) Error() string {
+	return fmt.Sprintf("The %v flag was expected to set %v to %v", e.flag, e.glyphKey, e.glyphValue)
+}
+
+func Test_Apply(t *testing.T) {
+	type TestCase struct {
+		flags      Flags
+		asExpected func() error
+	}
+
+	testCases := []TestCase{
+		{
+			flags: Flags{FILL},
+			asExpected: func() error {
+				if !styles.IsFillSet {
+					return &FillFlagError{FILL}
+				}
+				return nil
+			},
+		},
+
+		{
+			flags: Flags{ASCII},
+			asExpected: func() error {
+				expectations := map[*string]string{
+					&glyphs.Mine:      "M",
+					&glyphs.Flag:      "F",
+					&glyphs.WrongFlag: "W",
+					&glyphs.Empty:     " ",
+					&glyphs.Zero:      "x",
+					&glyphs.One:       "1",
+					&glyphs.Two:       "2",
+					&glyphs.Three:     "3",
+					&glyphs.Four:      "4",
+					&glyphs.Five:      "5",
+					&glyphs.Six:       "6",
+					&glyphs.Seven:     "7",
+					&glyphs.Eight:     "8",
+				}
+
+				for key, val := range expectations {
+					if *key != val {
+						return &AsciiFlagError{ASCII, *key, val}
+					}
+				}
+				return nil
+			},
+		},
+	}
+
+	for _, testCase := range testCases {
+		testCase.flags.Apply()
+		if err := testCase.asExpected(); err != nil {
+			t.Error(err)
+		}
+	}
+}
+
+func Test_GetFlagArgument(t *testing.T) {
+	type TestCase struct {
+		args     []string
+		index    int
+		expected string
+	}
+
+	testCases := []TestCase{
+		{
+			args:     []string{MINES, "12"},
+			index:    0,
+			expected: "12",
+		},
+		{
+			args:     []string{"foo", "bar", "baz"},
+			index:    1,
+			expected: "baz",
+		},
+		{
+			args:     []string{"foo", "bar", "baz", "fizzbuzz"},
+			index:    2,
+			expected: "fizzbuzz",
+		},
+	}
+
+	for _, testCase := range testCases {
+		actual := getFlagArgument(testCase.args, testCase.index)
+		expected := testCase.expected
+
+		if expected != actual {
+			t.Errorf("[Assertion failed] was expecting %v to be %v", actual, expected)
+		}
+	}
+}
+
+type UnsetEnvVarError struct {
+	envVar string
+}
+
+func (e *UnsetEnvVarError) Error() string {
+	return fmt.Sprintf("%v was expected to be set", e.envVar)
+}
+func (e *UnsetEnvVarError) Is(target error) bool {
+	return e.Error() == target.Error()
+}
+
+type IncorrectEnvVarError struct {
+	envVar   string
+	expected string
+	actual   string
+}
+
+func (e *IncorrectEnvVarError) Error() string {
+	return fmt.Sprintf("%v value was expected to be %v, but it actually is %v", e.envVar, e.expected, e.actual)
+}
+
+func (e *IncorrectEnvVarError) Is(target error) bool {
+	return e.Error() == target.Error()
+}
+
+func Test_ApplyFromAgs(t *testing.T) {
+	type TestCase struct {
+		osArgs []string
+		test   func() error
+	}
+
+	testCases := []TestCase{
+		{
+			osArgs: []string{"foo", THEME_PREVIEW},
+			test: func() error {
+				preview, ok := os.LookupEnv(envkeys.Preview)
+				if !ok {
+					return &UnsetEnvVarError{envkeys.Preview}
+				}
+				if preview != "true" {
+					return &IncorrectEnvVarError{envkeys.Preview, "true", preview}
+				}
+				return nil
+			},
+		},
+	}
+
+	for _, testCase := range testCases {
+		os.Args = testCase.osArgs
+
+		ApplyFromArgs()
+		if err := testCase.test(); err != nil {
+			t.Error(err)
 		}
 	}
 }
