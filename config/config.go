@@ -86,7 +86,7 @@ func (config *Config) Validate() (bool, []error) {
 		}
 		errors = append(errors, schemaErrors...)
 	}
-	
+
 	if isValid, colorsErrors := config.Colors.Validate(); !isValid {
 		errors = append(errors, colorsErrors...)
 	}
@@ -114,8 +114,8 @@ func (config *Config) Apply() {
 	config.Cursor.Apply()
 	config.Bindings.Apply()
 	config.Glyphs.Apply()
-	config.Colors.Apply()
 	config.Flags.Apply()
+	config.Colors.Apply()
 
 	if val, ok := os.LookupEnv(envkeys.Preview); ok && val == "true" {
 		fmt.Println(themepreview.RenderThemePreview())
