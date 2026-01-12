@@ -458,7 +458,7 @@ Requires an argument of an unsigned 16 bit integer (0-65535)
 ##### Usage
 
 ```sh
-sweep --H 25
+sweep --W 25
 ```
 
 ---
