@@ -94,6 +94,8 @@ func (m model) openTile(position types.Position) {
 	case tiles.OpenSafe:
 		m.openAroundOpenTile(position)
 		return
+	case tiles.FlaggedSafe:
+		m.flags--
 	}
 
 	m.gameEngine.OpenTile(position)
