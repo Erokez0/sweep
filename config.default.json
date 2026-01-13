@@ -50,6 +50,18 @@
     "move cursor left": [
       "h",
       "a"
+    ],
+    "move cursor to first column": [
+      "0"
+    ],
+    "move cursor to last column": [
+      "$"
+    ],
+    "move cursor to bottom row": [
+      "shiftg", "shift+g"
+    ],
+    "move cursor to top row": [
+      "gg"
     ]
   },
   "cursor": {

@@ -4,22 +4,21 @@ import (
 	"fmt"
 
 	actions "sweep/shared/consts/action"
-	keyactionmap "sweep/shared/vars/key-action-map"
 	regexes "sweep/shared/vars/regexes"
 )
 
-type Bindings map[actions.Action][]string
+type Bindings map[actions.ActionType][]string
 
 func (b Bindings) Apply() {
 	for action, bindings := range b {
 		for _, key := range bindings {
-			keyactionmap.KeyActionMap[key] = action
+			action.SetBinding(key)
 		}
 	}
 }
 
 type InvalidActionError struct {
-	action actions.Action
+	action actions.ActionType
 }
 
 func (e *InvalidActionError) Error() string {
@@ -27,7 +26,7 @@ func (e *InvalidActionError) Error() string {
 }
 
 type InvalidKeyPressPatternError struct {
-	action  actions.Action
+	action  actions.ActionType
 	index   int
 	binding string
 }

@@ -302,18 +302,18 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case actions.OpenTile:
 			actionHandler = m.OpenTile
 			multiplier = 1
-		case actions.MoveCursorToBottomRow:
-			actionHandler = m.MoveCursorToBottomRow
-			multiplier = 1
-		case actions.MoveCursorToTopRow:
-			actionHandler = m.MoveCursorToTopRow
-			multiplier = 1
-		case actions.MoveCursorToFirstColumn:
-			actionHandler = m.MoveCursorToFirstColumn
-			multiplier = 1
-		case actions.MoveCursorToLastColumn:
-			actionHandler = m.MoveCursorToLastColumn
-			multiplier = 1
+		// case actions.MoveCursorToBottomRow:
+		// 	actionHandler = m.MoveCursorToBottomRow
+		// 	multiplier = 1
+		// case actions.MoveCursorToTopRow:
+		// 	actionHandler = m.MoveCursorToTopRow
+		// 	multiplier = 1
+		// case actions.MoveCursorToFirstColumn:
+		// 	actionHandler = m.MoveCursorToFirstColumn
+		// 	multiplier = 1
+		// case actions.MoveCursorToLastColumn:
+		// 	actionHandler = m.MoveCursorToLastColumn
+			// multiplier = 1
 		}
 
 		for range multiplier {
