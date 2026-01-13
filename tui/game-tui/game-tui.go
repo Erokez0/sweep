@@ -14,8 +14,7 @@ import (
 	tilecontent "sweep/shared/consts/tile-content"
 	tiles "sweep/shared/consts/tiles"
 	types "sweep/shared/types"
-	"sweep/shared/utils"
-	keyactionmap "sweep/shared/vars/key-action-map"
+	utils "sweep/shared/utils"
 	endscreen "sweep/tui/end-screen"
 	styles "sweep/tui/styles"
 	tilerenderer "sweep/tui/tile-renderer"
@@ -47,6 +46,7 @@ func CreateTiles(width, height uint16) *Tiles {
 }
 
 type model struct {
+	keyPressBuffer string
 	config         config.Config
 	cursorPosition types.Position
 	gameEngine     types.IGameEngine
@@ -72,11 +72,12 @@ func CreateModel(config *config.Config) model {
 			X: config.Width / 2,
 			Y: config.Height / 2,
 		},
-		gameEngine: &gameEngine,
-		tiles:      *CreateTiles(config.Width, config.Height),
-		startTime:  time.Now(),
-		moves:      0,
-		config:     *config,
+		gameEngine:     &gameEngine,
+		tiles:          *CreateTiles(config.Width, config.Height),
+		startTime:      time.Now(),
+		moves:          0,
+		config:         *config,
+		keyPressBuffer: "",
 	}
 }
 
@@ -86,7 +87,7 @@ func (m model) Init() tea.Cmd {
 
 var _ tea.Model = model{}
 
-func (m model) openTile(position types.Position) {
+func (m *model) openTile(position types.Position) {
 	tileType := m.gameEngine.GetTile(position)
 	switch tileType {
 	case tiles.OutOfBounds:
@@ -188,36 +189,29 @@ func (m model) openAroundOpenTile(position types.Position) {
 	wg.Wait()
 }
 
-func (m model) MoveCursorUp() (model, tea.Cmd) {
+func (m *model) MoveCursorUp() {
 	if m.cursorPosition.Y < uint16(m.gameEngine.GetHeight())-1 {
 		m.cursorPosition.Y++
 	}
-
-	return m, nil
 }
-func (m model) MoveCursorDown() (model, tea.Cmd) {
+func (m *model) MoveCursorDown() {
 	if m.cursorPosition.Y > 0 {
 		m.cursorPosition.Y--
 	}
-
-	return m, nil
 }
-func (m model) MoveCursorRight() (model, tea.Cmd) {
+func (m *model) MoveCursorRight() {
 	if m.cursorPosition.X < uint16(m.gameEngine.GetWidth())-1 {
 		m.cursorPosition.X++
 	}
-
-	return m, nil
 }
-func (m model) MoveCursorLeft() (model, tea.Cmd) {
+func (m *model) MoveCursorLeft() {
 	if m.cursorPosition.X > 0 {
 		m.cursorPosition.X--
 	}
-	return m, nil
 }
-func (m model) FlagTile() (model, tea.Cmd) {
+func (m *model) FlagTile() {
 	if m.moves == 0 {
-		return m, nil
+		return
 	}
 	m.moves++
 
@@ -230,17 +224,33 @@ func (m model) FlagTile() (model, tea.Cmd) {
 		m.tiles.SetTile(m.cursorPosition, tilecontent.Empty)
 		m.flags--
 	}
-
-	return m, nil
 }
-func (m model) OpenTile() (model, tea.Cmd) {
+func (m *model) OpenTile() {
 	if m.moves == 0 {
 		m.gameEngine.SetMines(m.cursorPosition)
 	}
 	m.moves++
 	m.openTile(m.cursorPosition)
+}
 
-	return m, nil
+func (m *model) MoveCursorToTopRow() {
+	m.moves++
+	m.cursorPosition.Y = 0
+}
+
+func (m *model) MoveCursorToBottomRow() {
+	m.moves++
+	m.cursorPosition.Y = m.config.Height - 1
+}
+
+func (m *model) MoveCursorToFirstColumn() {
+	m.moves++
+	m.cursorPosition.X = 0
+}
+
+func (m *model) MoveCursorToLastColumn() {
+	m.moves++
+	m.cursorPosition.X = m.config.Width - 1
 }
 
 func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
@@ -261,27 +271,53 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		switch msgString {
 		case "ctrl+c", "q":
 			os.Exit(0)
-		}
-
-		action, ok := keyactionmap.KeyActionMap[msgString]
-
-		if !ok {
+		case "esc":
+			m.keyPressBuffer = ""
 			return m, nil
 		}
+		m.keyPressBuffer += msgString
 
-		switch action {
+		action, err := actions.GetAction(m.keyPressBuffer)
+
+		if err != nil {
+			return m, nil
+		}
+		m.keyPressBuffer = ""
+
+		multiplier := action.Multiplier
+
+		var actionHandler func()
+		switch action.Kind {
 		case actions.FlagTile:
-			return m.FlagTile()
+			actionHandler = m.FlagTile
+			multiplier = 1
 		case actions.MoveCursorDown:
-			return m.MoveCursorDown()
+			actionHandler = m.MoveCursorDown
 		case actions.MoveCursorLeft:
-			return m.MoveCursorLeft()
+			actionHandler = m.MoveCursorLeft
 		case actions.MoveCursorRight:
-			return m.MoveCursorRight()
+			actionHandler = m.MoveCursorRight
 		case actions.MoveCursorUp:
-			return m.MoveCursorUp()
+			actionHandler = m.MoveCursorUp
 		case actions.OpenTile:
-			return m.OpenTile()
+			actionHandler = m.OpenTile
+			multiplier = 1
+		case actions.MoveCursorToBottomRow:
+			actionHandler = m.MoveCursorToBottomRow
+			multiplier = 1
+		case actions.MoveCursorToTopRow:
+			actionHandler = m.MoveCursorToTopRow
+			multiplier = 1
+		case actions.MoveCursorToFirstColumn:
+			actionHandler = m.MoveCursorToFirstColumn
+			multiplier = 1
+		case actions.MoveCursorToLastColumn:
+			actionHandler = m.MoveCursorToLastColumn
+			multiplier = 1
+		}
+
+		for range multiplier {
+			actionHandler()
 		}
 	}
 
