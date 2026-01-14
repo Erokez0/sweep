@@ -46,14 +46,16 @@ func CreateTiles(width, height uint16) *Tiles {
 }
 
 type model struct {
-	keyPressBuffer string
-	config         config.Config
-	cursorPosition types.Position
-	gameEngine     types.IGameEngine
-	tiles          Tiles
-	startTime      time.Time
-	moves          int16
-	flags          int16
+	screenWidth            int
+	keyPressBuffer         string
+	previousKeyPressBuffer string
+	config                 config.Config
+	cursorPosition         types.Position
+	gameEngine             types.IGameEngine
+	tiles                  Tiles
+	startTime              time.Time
+	moves                  int16
+	flags                  int16
 }
 
 func CreateModel(config *config.Config) model {
@@ -145,7 +147,7 @@ func (m model) openSafeAroundTile(position types.Position) {
 	wg.Wait()
 }
 
-func (m model) openAroundOpenTile(position types.Position) {
+func (m *model) openAroundOpenTile(position types.Position) {
 	x, y := position.GetCoords()
 
 	neighbours := []types.Position{
@@ -253,6 +255,44 @@ func (m *model) MoveCursorToLastColumn() {
 	m.cursorPosition.X = m.config.Width - 1
 }
 
+func (m *model) doAction(action *actions.Action) {
+	multiplier := action.Multiplier
+
+	var actionHandler func()
+	switch action.Kind {
+	case actions.FlagTile:
+		actionHandler = m.FlagTile
+		multiplier = 1
+	case actions.MoveCursorDown:
+		actionHandler = m.MoveCursorDown
+	case actions.MoveCursorLeft:
+		actionHandler = m.MoveCursorLeft
+	case actions.MoveCursorRight:
+		actionHandler = m.MoveCursorRight
+	case actions.MoveCursorUp:
+		actionHandler = m.MoveCursorUp
+	case actions.OpenTile:
+		actionHandler = m.OpenTile
+		multiplier = 1
+	case actions.MoveCursorToBottomRow:
+		actionHandler = m.MoveCursorToBottomRow
+		multiplier = 1
+	case actions.MoveCursorToTopRow:
+		actionHandler = m.MoveCursorToTopRow
+		multiplier = 1
+	case actions.MoveCursorToFirstColumn:
+		actionHandler = m.MoveCursorToFirstColumn
+		multiplier = 1
+	case actions.MoveCursorToLastColumn:
+		actionHandler = m.MoveCursorToLastColumn
+		multiplier = 1
+	}
+
+	for range multiplier {
+		actionHandler()
+	}
+}
+
 func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	if m.gameEngine.IsFinished() {
 		switch msg := msg.(type) {
@@ -265,6 +305,8 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		return m, tea.Quit
 	}
 	switch msg := msg.(type) {
+	case tea.WindowSizeMsg:
+		m.screenWidth = msg.Width
 	case tea.KeyMsg:
 		msgString := msg.String()
 
@@ -272,6 +314,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case "ctrl+c", "q":
 			os.Exit(0)
 		case "esc":
+			m.previousKeyPressBuffer = m.keyPressBuffer
 			m.keyPressBuffer = ""
 			return m, nil
 		}
@@ -282,50 +325,32 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		if err != nil {
 			return m, nil
 		}
+		m.previousKeyPressBuffer = m.keyPressBuffer
 		m.keyPressBuffer = ""
 
-		multiplier := action.Multiplier
-
-		var actionHandler func()
-		switch action.Kind {
-		case actions.FlagTile:
-			actionHandler = m.FlagTile
-			multiplier = 1
-		case actions.MoveCursorDown:
-			actionHandler = m.MoveCursorDown
-		case actions.MoveCursorLeft:
-			actionHandler = m.MoveCursorLeft
-		case actions.MoveCursorRight:
-			actionHandler = m.MoveCursorRight
-		case actions.MoveCursorUp:
-			actionHandler = m.MoveCursorUp
-		case actions.OpenTile:
-			actionHandler = m.OpenTile
-			multiplier = 1
-		case actions.MoveCursorToBottomRow:
-			actionHandler = m.MoveCursorToBottomRow
-			multiplier = 1
-		case actions.MoveCursorToTopRow:
-			actionHandler = m.MoveCursorToTopRow
-			multiplier = 1
-		case actions.MoveCursorToFirstColumn:
-			actionHandler = m.MoveCursorToFirstColumn
-			multiplier = 1
-		case actions.MoveCursorToLastColumn:
-			actionHandler = m.MoveCursorToLastColumn
-			multiplier = 1
-		}
-
-		for range multiplier {
-			actionHandler()
-		}
+		m.doAction(action)
 	}
 
 	return m, nil
 }
 
-func (m model) View() string {
+func (m model) renderFooter(s *strings.Builder) {
+	formattedDuration := utils.FormatTime(time.Since(m.startTime))
+	timeStr := fmt.Sprintf("%v", formattedDuration)
 
+	var keysStr string
+	if m.keyPressBuffer != "" {
+		keysStr = m.keyPressBuffer
+	} else {
+		keysStr = m.previousKeyPressBuffer
+	}
+
+	margin := int(m.gameEngine.GetWidth())*3 - len(timeStr)
+
+	s.WriteString(timeStr + styles.MarginLeft(margin, keysStr))
+}
+
+func (m model) View() string {
 	if m.gameEngine.IsFinished() {
 		endscreen := endscreen.CreateModel(m.startTime, m.gameEngine)
 		return endscreen.View()
@@ -357,10 +382,7 @@ func (m model) View() string {
 
 	s.WriteString(lines.String())
 	s.WriteRune('\n')
-
-	formattedDuration := utils.FormatTime(time.Since(m.startTime))
-	fmt.Fprintf(&s, "time - %v", formattedDuration)
+	m.renderFooter(&s)
 
 	return styles.TableStyle.Render(s.String())
-
 }

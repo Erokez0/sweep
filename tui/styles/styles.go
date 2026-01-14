@@ -14,6 +14,14 @@ func CreateTileStyle(color string) lipgloss.Style {
 	return tileStyle.Foreground(lpColor).Background(adaptiveColor)
 }
 
+func MarginLeft(length int, str string) string {
+	return noStyle.MarginLeft(length - len(str)).Render(str)
+}
+
+func Center(width int, str string) string {
+	return noStyle.Width(width).AlignHorizontal(lipgloss.Center).Render(str)
+}
+
 var (
 	tileStyle   = noStyle.Bold(true).Foreground(adaptiveColor).Background(lipgloss.NoColor{})
 	noStyle     = lipgloss.NewStyle()
