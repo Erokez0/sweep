@@ -334,31 +334,12 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	return m, nil
 }
 
-func (m model) renderFooter(s *strings.Builder) {
-	formattedDuration := utils.FormatTime(time.Since(m.startTime))
-	timeStr := fmt.Sprintf("%v", formattedDuration)
-
-	var keysStr string
-	if m.keyPressBuffer != "" {
-		keysStr = m.keyPressBuffer
-	} else {
-		keysStr = m.previousKeyPressBuffer
-	}
-
-	margin := int(m.gameEngine.GetWidth())*3 - len(timeStr)
-
-	s.WriteString(timeStr + styles.MarginLeft(margin, keysStr))
+func (m model) renderHeader(s *strings.Builder) {
+	header := styles.HeaderStyle.Render(fmt.Sprintf("%v %v/%v", misc.AppName, m.flags, m.config.Mines))
+	s.WriteString(header)
 }
 
-func (m model) View() string {
-	if m.gameEngine.IsFinished() {
-		endscreen := endscreen.CreateModel(m.startTime, m.gameEngine)
-		return endscreen.View()
-	}
-
-	var s strings.Builder
-	s.WriteString(styles.HeaderStyle.Render(fmt.Sprintf("%v %v/%v", misc.AppName, m.flags, m.config.Mines)))
-
+func (m model) renderTiles(s *strings.Builder) {
 	var lines strings.Builder
 	for row := range m.config.Height {
 		y := (m.config.Height - 1 - row)
@@ -382,6 +363,35 @@ func (m model) View() string {
 
 	s.WriteString(lines.String())
 	s.WriteRune('\n')
+}
+
+func (m model) renderFooter(s *strings.Builder) {
+	formattedDuration := utils.FormatTime(time.Since(m.startTime))
+	timeStr := fmt.Sprintf("%v", formattedDuration)
+
+	var keysStr string
+	if m.keyPressBuffer != "" {
+		keysStr = m.keyPressBuffer
+	} else {
+		keysStr = m.previousKeyPressBuffer
+	}
+
+	margin := int(m.gameEngine.GetWidth())*3 - len(timeStr)
+
+	s.WriteString(timeStr + styles.MarginLeft(margin, keysStr))
+}
+
+func (m model) View() string {
+	if m.gameEngine.IsFinished() {
+		endscreen := endscreen.CreateModel(m.startTime, m.gameEngine)
+		return endscreen.View()
+	}
+
+	var s strings.Builder
+	m.renderHeader(&s)
+
+	m.renderTiles(&s)
+
 	m.renderFooter(&s)
 
 	return styles.TableStyle.Render(s.String())
