@@ -42,7 +42,7 @@ func (b Bindings) Validate() (bool, []error) {
 			errors = append(errors, &InvalidActionError{action})
 		}
 		for index, binding := range bindings {
-			if !regexes.KeyRegex.MatchString(binding) {
+			if !regexes.KeyPressRegex.MatchString(binding) {
 				errors = append(errors, &InvalidKeyPressPatternError{action, index, binding})
 			}
 		}
