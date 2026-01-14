@@ -9,7 +9,7 @@ import (
 
 	config "sweep/config"
 	gameengine "sweep/game-engine"
-	actions "sweep/shared/consts/action"
+	actions "sweep/shared/consts/actions"
 	misc "sweep/shared/consts/misc"
 	tilecontent "sweep/shared/consts/tile-content"
 	tiles "sweep/shared/consts/tiles"

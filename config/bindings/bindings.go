@@ -3,7 +3,7 @@ package bindings
 import (
 	"fmt"
 
-	actions "sweep/shared/consts/action"
+	actions "sweep/shared/consts/actions"
 	regexes "sweep/shared/vars/regexes"
 )
 
