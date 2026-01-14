@@ -146,12 +146,19 @@ These options set desired inputs for said actions
 - `flag tile` - the action of setting a flag on a tile under the cursor
 - `open tile` - the action of revealing the contents of a tile under the cursor
 
-These correspond to the action of moving the cursor to the corresponding direction by 1 step
+These correspond to the action of moving the cursor to the corresponding direction by 1 step:
 
 - `move cursor down`
 - `move cursor up`
 - `move cursor right`
 - `move cursor left`
+
+##### VIM motions
+
+- `move cursor to top row` # gg
+- `move cursor to bottom row` # G
+- `move cursor to first column` # 0
+- `move cursor to last column` # $
 
 The value for each option is list of keys or combinations of them. Those include any character from the keyboard and special keys like ctrl, backspace, enter, alt, shift, etc
 
@@ -273,6 +280,19 @@ The default config file only serves a purpose as en example of how you may confi
     "move cursor left": [
       "h",
       "a"
+    ],
+    "move cursor to first column": [
+      "0"
+    ],
+    "move cursor to last column": [
+      "$"
+    ],
+    "move cursor to bottom row": [
+      "G",
+      "shift+g"
+    ],
+    "move cursor to top row": [
+      "gg"
     ]
   },
   "cursor": {
@@ -308,7 +328,8 @@ sweep --preview
 
 As you can see all possible fields are filled, `null` fields means the defaults baked into the program are going to be used
 
-Keybinds in the example use the VIM keys for movement as well as WASD, z or enter for opening a tile and x or \ for setting a flag
+Keybinds in the default config use the VIM keys for movement as well as WASD, z or enter for opening a tile and x or \ for setting a flag.
+Also the [VIM motions](#VIM-motions) are enabled by default
 
 ---
 
