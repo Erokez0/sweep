@@ -160,6 +160,11 @@ These correspond to the action of moving the cursor to the corresponding directi
 - `move cursor to first column` # 0
 - `move cursor to last column` # $
 
+VIM quantifiers are supported as well. For example:
+If you have "j" key bind to move cursor down then "2j" will move the cursor down 2 time.
+
+Buffer is cleared with `escape`
+
 The value for each option is list of keys or combinations of them. Those include any character from the keyboard and special keys like ctrl, backspace, enter, alt, shift, etc
 
 ---
