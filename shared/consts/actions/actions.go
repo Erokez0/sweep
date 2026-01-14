@@ -43,16 +43,15 @@ func IsAction(str string) bool {
 
 type Action struct {
 	Kind       ActionType
-	Multiplier byte
+	Multiplier uint16
 }
 
 type MultiplierParseError struct {
-	multiplier   string
-	strconvError error
+	multiplier string
 }
 
 func (e *MultiplierParseError) Error() string {
-	return fmt.Sprintf("could not parse multiplier \"%v\": %v", e.multiplier, e.Error())
+	return fmt.Sprintf("could not parse multiplier \"%v\"", e.multiplier)
 }
 func (e *MultiplierParseError) Is(target error) bool {
 	return e.Error() == target.Error()
@@ -94,17 +93,17 @@ loop:
 		return nil, &InvalidBindError{keys}
 	}
 
-	multiplier := byte(1)
+	multiplier := uint16(1)
 	var nums string
 	if firstKeyIx != 0 {
 		nums = strings.Join(symbols[:firstKeyIx], "")
 	}
 	if len(nums) != 0 {
-		multiplier64, err := strconv.ParseUint(nums, 10, 64)
+		multiplier64, err := strconv.ParseUint(nums, 10, 16)
 		if err != nil {
-			return nil, &MultiplierParseError{nums, err}
+			return nil, &MultiplierParseError{nums}
 		}
-		multiplier = byte(multiplier64)
+		multiplier = uint16(multiplier64)
 	}
 
 	return &Action{
