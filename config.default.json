@@ -58,7 +58,8 @@
       "$"
     ],
     "move cursor to bottom row": [
-      "shiftg", "shift+g"
+      "G",
+      "shift+g"
     ],
     "move cursor to top row": [
       "gg"
