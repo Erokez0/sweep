@@ -29,9 +29,23 @@ func (t *Tiles) SetTile(position types.Position, tile tilecontent.TileContent) {
 	(*t)[y][x] = tile
 }
 
-func (t Tiles) GetTile(position types.Position) tilecontent.TileContent {
+type TileOutOfBoundsError struct {
+	position types.Position
+}
+
+func (e *TileOutOfBoundsError) Error() string {
+	return fmt.Sprintf("tile is out of bounds\nx: %v,y: %v", e.position.X, e.position.Y)
+}
+func (e *TileOutOfBoundsError) Is(target error) bool {
+	return e.Error() == target.Error()
+}
+
+func (t Tiles) GetTile(position types.Position) (tilecontent.TileContent, error) {
 	x, y := position.GetCoords()
-	return t[y][x]
+	if int(y) >= len(t) || int(x) >= len(t[x]) {
+		return *new(tilecontent.TileContent), &TileOutOfBoundsError{}
+	}
+	return t[y][x], nil
 }
 
 func CreateTiles(width, height uint16) *Tiles {
@@ -148,8 +162,14 @@ func (m model) openSafeAroundTile(position types.Position) {
 }
 
 func (m *model) openAroundOpenTile(position types.Position) {
-	x, y := position.GetCoords()
+	tileContent, err := m.tiles.GetTile(position)
+	if err != nil {
+		return
+	}
+	tileCount, _ := tileContent.ToNumber()
+	var flagCount byte
 
+	x, y := position.GetCoords()
 	neighbours := []types.Position{
 		{X: x - 1, Y: y - 1},
 		{X: x - 1, Y: y},
@@ -159,6 +179,16 @@ func (m *model) openAroundOpenTile(position types.Position) {
 		{X: x + 1, Y: y - 1},
 		{X: x + 1, Y: y},
 		{X: x + 1, Y: y + 1},
+	}
+
+	for _, position := range neighbours {
+		if tc, err := m.tiles.GetTile(position); err == nil && tc == tilecontent.Flag {
+			flagCount++
+		}
+	}
+
+	if tileCount != flagCount {
+		return
 	}
 
 	var wg sync.WaitGroup
@@ -218,7 +248,13 @@ func (m *model) FlagTile() {
 	m.moves++
 
 	m.gameEngine.FlagToggleTile(m.cursorPosition)
-	switch m.tiles.GetTile(m.cursorPosition) {
+
+	tile, err := m.tiles.GetTile(m.cursorPosition)
+	if err != nil {
+		return
+	}
+
+	switch tile {
 	case tilecontent.Empty:
 		m.tiles.SetTile(m.cursorPosition, tilecontent.Flag)
 		m.flags++
@@ -347,7 +383,10 @@ func (m model) renderTiles(s *strings.Builder) {
 		for col := range m.config.Width {
 			x := col
 			isFocused := uint16(x) == m.cursorPosition.X && uint16(y) == m.cursorPosition.Y
-			tile := m.tiles.GetTile(types.Position{X: x, Y: y})
+			tile, err := m.tiles.GetTile(types.Position{X: x, Y: y})
+			if err != nil {
+				panic(err)
+			}
 			renderedTile := tilerenderer.RenderTileByContent(tile, isFocused)
 			line += renderedTile
 		}
