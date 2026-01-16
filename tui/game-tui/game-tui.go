@@ -42,7 +42,7 @@ func (e *TileOutOfBoundsError) Is(target error) bool {
 
 func (t Tiles) GetTile(position types.Position) (tilecontent.TileContent, error) {
 	x, y := position.GetCoords()
-	if int(y) >= len(t) || int(x) >= len(t[x]) {
+	if int(y) >= len(t) || int(x) >= len(t[y]) {
 		return *new(tilecontent.TileContent), &TileOutOfBoundsError{}
 	}
 	return t[y][x], nil
