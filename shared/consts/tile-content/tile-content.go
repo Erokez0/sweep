@@ -24,22 +24,32 @@ const (
 	WrongFlag
 	Empty
 
-	zeroString = "0"
-	oneString = "1"
-	twoString = "2"
+	zeroString  = "0"
+	oneString   = "1"
+	twoString   = "2"
 	threeString = "3"
-	fourString = "4"
-	fiveString = "5"
-	sixString = "6"
+	fourString  = "4"
+	fiveString  = "5"
+	sixString   = "6"
 	sevenString = "7"
 	eightString = "8"
-
 
 	mineString      = "mine"
 	flagString      = "flag"
 	emptyString     = "empty"
 	wrongFlagString = "wrong flag"
 )
+
+type InvalidTileContentOptionError struct {
+	option string
+}
+
+func (e *InvalidTileContentOptionError) Error() string {
+	return fmt.Sprintf("\n%v\n is not a valid tile content option", e.option)
+}
+func (e *InvalidTileContentOptionError) Is(target error) bool {
+	return e.Error() == target.Error()
+}
 
 func (tc TileContent) String() string {
 	switch tc {
@@ -103,8 +113,19 @@ func FromString(str string) (TileContent, error) {
 	case emptyString, Empty.String():
 		return Empty, nil
 	default:
-		return *new(TileContent), fmt.Errorf("\"%v\" is not a valid tile content", str)
+		return *new(TileContent), &InvalidTileContentOptionError{str}
 	}
+}
+
+type InvalidTileContentByteOptionError struct {
+	value any
+}
+
+func (e *InvalidTileContentByteOptionError) Error() string {
+	return fmt.Sprintf("\"%v\" is not a valid option for byte conversion", e.value)
+}
+func (e *InvalidTileContentByteOptionError) Is(target error) bool {
+	return e.Error() == target.Error()
 }
 
 func FromNumber(n byte) (TileContent, error) {
@@ -128,7 +149,7 @@ func FromNumber(n byte) (TileContent, error) {
 	case 8:
 		return Eight, nil
 	default:
-		return *new(TileContent), fmt.Errorf("\"%v\" is not a valid tile content number", n)
+		return *new(TileContent), &InvalidTileContentByteOptionError{n}
 	}
 }
 
@@ -160,5 +181,29 @@ func SetGlyph(tileContent TileContent, glyph string) {
 		glyphs.WrongFlag = glyph
 	case Empty:
 		glyphs.Empty = glyph
+	}
+}
+func (tileContent TileContent) ToNumber() (byte, error) {
+	switch tileContent {
+	case Zero:
+		return 0, nil
+	case One:
+		return 1, nil
+	case Two:
+		return 2, nil
+	case Three:
+		return 3, nil
+	case Four:
+		return 4, nil
+	case Five:
+		return 5, nil
+	case Six:
+		return 6, nil
+	case Seven:
+		return 7, nil
+	case Eight:
+		return 8, nil
+	default:
+		return *new(byte), &InvalidTileContentByteOptionError{tileContent}
 	}
 }
