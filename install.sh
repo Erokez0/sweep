@@ -36,7 +36,7 @@ netbsd*)
 esac
 
 case $ARCH in
-x86_64 | x64)
+x86_64 | x64 | amd64)
   ARCH="amd64"
   ;;
 aarch64 | arm64)
@@ -255,4 +255,3 @@ if [[ "$SHELL" == *"bash" ]]; then
 elif [[ "$SHELL" == *"zsh" ]]; then
   echo "  source ~/.zshrc"
 fi
-
