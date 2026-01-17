@@ -195,10 +195,11 @@ func (m *model) openAroundOpenTile(position types.Position) {
 	for _, position := range neighbours {
 		wg.Go(func() {
 			switch m.gameEngine.GetTile(position) {
-			case tiles.FlaggedSafe, tiles.FlaggedMine, tiles.OutOfBounds:
+			case tiles.FlaggedMine, tiles.FlaggedSafe, tiles.OutOfBounds:
 				return
+			case tiles.ClosedSafe, tiles.ClosedMine:
+				m.gameEngine.OpenTile(position)
 			}
-			m.gameEngine.OpenTile(position)
 
 			if m.gameEngine.IsFinished() {
 				defer tea.Quit()
