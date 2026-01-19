@@ -14,7 +14,6 @@ import (
 var _ types.IGameEngine = (*GameEngine)(nil)
 
 type GameEngine struct {
-	types.IGameEngine
 	isFinished       bool
 	mines            uint16
 	width            uint16
@@ -128,11 +127,21 @@ func (g *GameEngine) setTile(position types.Position, tile types.Tile) {
 	g.field[y][x] = tile
 }
 
-func (g *GameEngine) checkWinCondition() {
-	allBombsFlagged := g.flaggedMineCount == g.mines && g.flaggedCount == g.flaggedMineCount
-	allSafeTilesOpen := (g.width*g.height - g.openCount) == g.flaggedMineCount
+func (g *GameEngine) areAllMinesFlagged() bool {
+	return g.flaggedCount == g.mines && g.mines == g.flaggedMineCount
+}
 
-	g.isFinished = allBombsFlagged && allSafeTilesOpen
+func (g *GameEngine) areAllSafeTilesOpen() bool {
+	tileCount := g.width * g.height
+
+	return tileCount-g.mines <= g.openCount
+}
+
+func (g *GameEngine) checkWinCondition() {
+	if g.isFinished {
+		return
+	}
+	g.isFinished = (g.areAllMinesFlagged() && g.areAllSafeTilesOpen())
 }
 
 // Second return value is whether the tile is a Mine

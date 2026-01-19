@@ -289,3 +289,226 @@ func TestGetHeight(t *testing.T) {
 		}
 	}
 }
+
+func Test_areAllSafeTilesOpen(t *testing.T) {
+	type TestCase struct {
+		expected bool
+		prepare  func(*GameEngine)
+	}
+
+	testCases := []TestCase{
+		{
+			expected: true,
+			prepare: func(g *GameEngine) {
+				g.field = [][]types.Tile{
+					{
+						tiles.ClosedSafe, tiles.ClosedMine,
+					},
+					{
+						tiles.ClosedSafe, tiles.ClosedSafe,
+					},
+				}
+				g.width = 2
+				g.height = 2
+				g.mines = 1
+
+				g.OpenTile(types.Position{X: 0, Y: 0})
+				g.OpenTile(types.Position{X: 0, Y: 1})
+				g.OpenTile(types.Position{X: 1, Y: 1})
+			},
+		},
+		{
+			expected: false,
+			prepare: func(g *GameEngine) {
+				g.field = [][]types.Tile{
+					{
+						tiles.ClosedSafe, tiles.ClosedMine,
+					},
+					{
+						tiles.ClosedSafe, tiles.ClosedSafe,
+					},
+				}
+				g.width = 2
+				g.height = 2
+				g.mines = 1
+
+				g.OpenTile(types.Position{X: 0, Y: 0})
+				g.OpenTile(types.Position{X: 0, Y: 1})
+			},
+		},
+		{
+			expected: true,
+			prepare: func(g *GameEngine) {
+				g.field = [][]types.Tile{
+					{
+						tiles.ClosedSafe,
+						tiles.ClosedSafe,
+						tiles.ClosedSafe,
+					},
+
+					{
+						tiles.ClosedSafe,
+						tiles.ClosedMine,
+						tiles.ClosedSafe,
+					},
+
+					{
+						tiles.ClosedSafe,
+						tiles.ClosedSafe,
+						tiles.ClosedSafe,
+					},
+				}
+				g.mines = 1
+				g.width = 3
+				g.height = 3
+
+				g.OpenTile(types.Position{X: 0, Y: 0})
+				g.OpenTile(types.Position{X: 0, Y: 1})
+				g.OpenTile(types.Position{X: 0, Y: 2})
+
+				g.OpenTile(types.Position{X: 1, Y: 0})
+				g.FlagToggleTile(types.Position{X: 1, Y: 1})
+				g.OpenTile(types.Position{X: 1, Y: 2})
+
+				g.OpenTile(types.Position{X: 2, Y: 0})
+				g.OpenTile(types.Position{X: 2, Y: 1})
+				g.OpenTile(types.Position{X: 2, Y: 2})
+			},
+		},
+
+		{
+			expected: true,
+			prepare: func(g *GameEngine) {
+				g.field = [][]types.Tile{
+					{
+						tiles.ClosedSafe, tiles.ClosedMine,
+					},
+					{
+						tiles.ClosedSafe, tiles.ClosedSafe,
+					},
+				}
+				g.width = 2
+				g.height = 2
+				g.mines = 1
+
+				g.OpenTile(types.Position{X: 0, Y: 0})
+				g.OpenTile(types.Position{X: 1, Y: 1})
+				g.OpenTile(types.Position{X: 0, Y: 1})
+			},
+		},
+	}
+
+	for _, testCase := range testCases {
+		g := new(GameEngine)
+		testCase.prepare(g)
+
+		expected := testCase.expected
+		actual := g.areAllSafeTilesOpen()
+
+		if actual != expected {
+			stats := fmt.Sprintf("open count: %v\nflagged mine count: %v\nflagged count: %v\ntile count: %v\n", g.openCount, g.flaggedMineCount, g.flaggedCount, g.width*g.height)
+			t.Errorf("[Assertion failed] g.areAllSafeTilesOpen\nExpected: %v\nActual: %v\n\n%v", expected, actual, stats)
+		}
+	}
+}
+
+func TestWinCondition(t *testing.T) {
+	type TestCase struct {
+		isFinished bool
+		win        bool
+		prepare    func(*GameEngine)
+	}
+
+	testCases := []TestCase{
+		{
+			isFinished: true,
+			prepare: func(g *GameEngine) {
+				g.field = [][]types.Tile{
+					{
+						tiles.ClosedSafe,
+						tiles.ClosedSafe,
+						tiles.ClosedSafe,
+					},
+
+					{
+						tiles.ClosedSafe,
+						tiles.ClosedMine,
+						tiles.ClosedSafe,
+					},
+
+					{
+						tiles.ClosedSafe,
+						tiles.ClosedSafe,
+						tiles.ClosedSafe,
+					},
+				}
+				g.mines = 1
+				g.width = 3
+				g.height = 3
+
+				g.OpenTile(types.Position{X: 0, Y: 0})
+				g.OpenTile(types.Position{X: 0, Y: 1})
+				g.OpenTile(types.Position{X: 0, Y: 2})
+
+				g.OpenTile(types.Position{X: 1, Y: 0})
+				g.FlagToggleTile(types.Position{X: 1, Y: 1})
+				g.OpenTile(types.Position{X: 1, Y: 2})
+
+				g.OpenTile(types.Position{X: 2, Y: 0})
+				g.OpenTile(types.Position{X: 2, Y: 1})
+				g.OpenTile(types.Position{X: 2, Y: 2})
+			},
+		},
+
+		{
+			isFinished: false,
+			prepare: func(g *GameEngine) {
+				g.field = [][]types.Tile{
+					{
+						tiles.ClosedSafe,
+						tiles.ClosedSafe,
+						tiles.ClosedSafe,
+					},
+
+					{
+						tiles.ClosedSafe,
+						tiles.ClosedMine,
+						tiles.ClosedSafe,
+					},
+
+					{
+						tiles.ClosedSafe,
+						tiles.ClosedSafe,
+						tiles.ClosedSafe,
+					},
+				}
+				g.mines = 1
+				g.width = 3
+				g.height = 3
+
+				g.OpenTile(types.Position{X: 0, Y: 0})
+				g.OpenTile(types.Position{X: 0, Y: 1})
+				g.OpenTile(types.Position{X: 0, Y: 2})
+
+				g.OpenTile(types.Position{X: 1, Y: 0})
+				g.OpenTile(types.Position{X: 1, Y: 2})
+
+				g.OpenTile(types.Position{X: 2, Y: 0})
+				g.OpenTile(types.Position{X: 2, Y: 1})
+				g.OpenTile(types.Position{X: 2, Y: 2})
+			},
+		},
+	}
+
+	for n, testCase := range testCases {
+		g := new(GameEngine)
+		testCase.prepare(g)
+
+		expected := testCase.isFinished
+		actual := g.isFinished
+
+		if expected != actual {
+			t.Errorf("[Assertion failed] #%v g.isFinished\nExpected: %v\nActual: %v", n+1, expected, actual)
+		}
+	}
+}
