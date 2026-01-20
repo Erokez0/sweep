@@ -4,6 +4,8 @@ A flexible minesweeping experience in your terminal emulator
 
 ![preview](./assets/sweep-preview.gif)
 
+[Read in russian](./README.ru.md)
+
 ## Why does it exist?
 
 I've started enjoying using the terminal and I like playing minesweeper. 
