@@ -366,8 +366,6 @@ Or for example seeing the path to the [`config.json`](#config-file) or preview y
 >
 > the config module will always overwrite configuration from file to match provided flags
 
-
-
 Now you can see all of the flags
 
 ---
@@ -404,6 +402,7 @@ Or if you just want to see the path
 ```sh
 sweep --config-path
 ```
+
 ---
 
 #### Copy default config
@@ -422,6 +421,8 @@ Will vary how the [colors](#colors) options affect the tiles
 
 If the flag is used, then the color will apply to the background of the tile and the foreground will black for dark terminal and white for light terminal,
 otherwise the color will apply to the foreground and the background will adapt to the background color of the terminal
+
+---
 
 #### Theme preview
 
@@ -505,7 +506,6 @@ So if you have go installed, the build process is pretty straightforward
 ```sh
 go build
 ```
-
 
 ## Contribution
 
