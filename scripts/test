@@ -9,3 +9,4 @@ go test --v --cover ./config/cursor
 go test --v --cover ./config/glyphs
 go test --v --cover ./config/bindings
 go test --v --cover ./config
+go test --v --cover ./shared/consts/actions
