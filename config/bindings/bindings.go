@@ -25,6 +25,10 @@ func (e *InvalidActionError) Error() string {
 	return fmt.Sprintf("(bindings) %v is not a valid action", e.action)
 }
 
+func (e *InvalidActionError) Is(target error) bool {
+	return e.Error() == target.Error()
+}
+
 type InvalidKeyPressPatternError struct {
 	action  actions.ActionType
 	index   int
@@ -32,7 +36,11 @@ type InvalidKeyPressPatternError struct {
 }
 
 func (e *InvalidKeyPressPatternError) Error() string {
-	return fmt.Sprintf("(bindings.%v.%v) %v does bot match key press pattern", e.action, e.index, e.binding)
+	return fmt.Sprintf("(bindings.%v.%v) %v does not match key press pattern", e.action, e.index, e.binding)
+}
+
+func (e *InvalidKeyPressPatternError) Is(target error) bool {
+	return e.Error() == target.Error()
 }
 
 func (b Bindings) Validate() (bool, []error) {
