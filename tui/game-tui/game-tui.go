@@ -274,12 +274,12 @@ func (m *model) OpenTile() {
 
 func (m *model) MoveCursorToTopRow() {
 	m.moves++
-	m.cursorPosition.Y = 0
+	m.cursorPosition.Y = m.config.Height - 1
 }
 
 func (m *model) MoveCursorToBottomRow() {
 	m.moves++
-	m.cursorPosition.Y = m.config.Height - 1
+	m.cursorPosition.Y = 0
 }
 
 func (m *model) MoveCursorToFirstColumn() {
