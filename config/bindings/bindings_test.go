@@ -128,7 +128,7 @@ func Test_Apply(t *testing.T) {
 	}
 
 	for _, testCase := range testCases {
-		testCase.bindings.Validate()
+		testCase.bindings.Apply()
 
 		for expected, keyPresses := range testCase.bindings {
 			for _, keyPress := range keyPresses {
@@ -145,4 +145,3 @@ func Test_Apply(t *testing.T) {
 		}
 	}
 }
-
