@@ -357,6 +357,11 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		}
 		m.keyPressBuffer += msgString
 
+		if !actions.AnyBindingStartWith(m.keyPressBuffer) {
+			m.keyPressBuffer = ""
+			return m, nil
+		}
+
 		action, err := actions.GetAction(m.keyPressBuffer)
 
 		if err != nil {

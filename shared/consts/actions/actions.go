@@ -68,7 +68,14 @@ func (e *InvalidBindError) Is(target error) bool {
 	return e.Error() == target.Error()
 }
 
-var errorCount int = 0
+func AnyBindingStartWith(str string) bool {
+	for k := range bindingsMap {
+		if strings.Contains(k, str) {
+			return true
+		}
+	}
+	return false
+}
 
 func GetAction(keyStrokes string) (*Action, error) {
 	var firstKeyIx uint
