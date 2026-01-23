@@ -2,6 +2,7 @@ package actions
 
 import (
 	"fmt"
+	"math"
 	"strconv"
 	"strings"
 )
@@ -43,17 +44,17 @@ func IsAction(str string) bool {
 
 type Action struct {
 	Kind       ActionType
-	Multiplier uint16
+	Quantifier uint16
 }
 
-type MultiplierParseError struct {
-	multiplier string
+type QuantifierParseError struct {
+	Quantifier string
 }
 
-func (e *MultiplierParseError) Error() string {
-	return fmt.Sprintf("could not parse multiplier \"%v\"", e.multiplier)
+func (e *QuantifierParseError) Error() string {
+	return fmt.Sprintf("could not parse Quantifier \"%v\"", e.Quantifier)
 }
-func (e *MultiplierParseError) Is(target error) bool {
+func (e *QuantifierParseError) Is(target error) bool {
 	return e.Error() == target.Error()
 }
 
@@ -68,17 +69,8 @@ func (e *InvalidBindError) Is(target error) bool {
 	return e.Error() == target.Error()
 }
 
-func AnyBindingStartWith(str string) bool {
-	for k := range bindingsMap {
-		if strings.Contains(k, str) {
-			return true
-		}
-	}
-	return false
-}
-
-func GetAction(keyStrokes string) (*Action, error) {
-	var firstKeyIx uint
+func getKeysFromKeyStrokes(keyStrokes string) string {
+	lastDigitIx := -1
 
 	symbols := strings.Split(keyStrokes, "")
 loop:
@@ -87,34 +79,89 @@ loop:
 		case "0", "1", "2",
 			"3", "4", "5",
 			"6", "7", "8", "9":
-			continue
+			lastDigitIx = ix
 		default:
-			firstKeyIx = uint(ix)
 			break loop
 		}
 	}
 
-	keys := strings.Join(symbols[firstKeyIx:], "")
-	kind, ok := bindingsMap[keys]
+	return strings.Join(symbols[lastDigitIx+1:], "")
+}
+
+func getQuantifierFromKeyStrokes(keyStrokes string, keys string) (uint16, error) {
+	quantifier := uint16(1)
+	quantifierPart := strings.Replace(keyStrokes, keys, "", 1)
+
+	if len(quantifierPart) > 6 {
+		return 0, &QuantifierParseError{quantifierPart}
+	}
+
+	if quantifierPart != "" {
+		quantifier64, err := strconv.ParseUint(quantifierPart, 10, 16)
+		if err != nil || quantifier64 > math.MaxUint16 {
+			return 0, &QuantifierParseError{quantifierPart}
+		}
+		quantifier = uint16(quantifier64)
+	}
+
+	return quantifier, nil
+}
+
+func AnyBindingStartWith(keyStrokes string) bool {
+	for keyPress, actionType := range bindingsMap {
+		if strings.HasPrefix(keyPress, keyStrokes) {
+			return true
+		}
+		switch actionType {
+		case MoveCursorDown, MoveCursorLeft,
+			MoveCursorRight, MoveCursorUp,
+			MoveCursorToBottomRow,
+			MoveCursorToTopRow, MoveCursorToLastColumn:
+
+			keys := getKeysFromKeyStrokes(keyStrokes)
+			quantifier, err := getQuantifierFromKeyStrokes(keyStrokes, keys)
+			if err != nil {
+				return false
+			}
+
+			if strconv.FormatUint(uint64(quantifier), 10) == keys {
+				return true
+			}
+
+			if keys == "" {
+				return true
+			}
+
+			if strings.HasPrefix(keyPress, keys) {
+				return true
+			}
+		}
+	}
+
+	return false
+}
+
+func GetAction(keyStrokes string) (*Action, error) {
+	kind, ok := bindingsMap[keyStrokes]
+	if ok {
+		return &Action{
+			Kind:       kind,
+			Quantifier: 1,
+		}, nil
+	}
+
+	keys := getKeysFromKeyStrokes(keyStrokes)
+	kind, ok = bindingsMap[keys]
 	if !ok {
 		return nil, &InvalidBindError{keys}
 	}
-
-	multiplier := uint16(1)
-	var nums string
-	if firstKeyIx != 0 {
-		nums = strings.Join(symbols[:firstKeyIx], "")
-	}
-	if len(nums) != 0 {
-		multiplier64, err := strconv.ParseUint(nums, 10, 16)
-		if err != nil {
-			return nil, &MultiplierParseError{nums}
-		}
-		multiplier = uint16(multiplier64)
+	quantifier, err := getQuantifierFromKeyStrokes(keyStrokes, keys)
+	if err != nil {
+		return nil, err
 	}
 
 	return &Action{
 		Kind:       kind,
-		Multiplier: multiplier,
+		Quantifier: quantifier,
 	}, nil
 }

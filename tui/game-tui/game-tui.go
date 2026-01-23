@@ -68,7 +68,7 @@ type model struct {
 	gameEngine             types.IGameEngine
 	tiles                  Tiles
 	startTime              time.Time
-	moves                  int16
+	openedATile            bool
 	flags                  int16
 }
 
@@ -91,7 +91,7 @@ func CreateModel(config *config.Config) model {
 		gameEngine:     &gameEngine,
 		tiles:          *CreateTiles(config.Width, config.Height),
 		startTime:      time.Now(),
-		moves:          0,
+		openedATile:    false,
 		config:         *config,
 		keyPressBuffer: "",
 	}
@@ -222,31 +222,61 @@ func (m *model) openAroundOpenTile(position types.Position) {
 	wg.Wait()
 }
 
-func (m *model) MoveCursorUp() {
-	if m.cursorPosition.Y < uint16(m.gameEngine.GetHeight())-1 {
-		m.cursorPosition.Y++
-	}
-}
-func (m *model) MoveCursorDown() {
-	if m.cursorPosition.Y > 0 {
-		m.cursorPosition.Y--
-	}
-}
-func (m *model) MoveCursorRight() {
-	if m.cursorPosition.X < uint16(m.gameEngine.GetWidth())-1 {
-		m.cursorPosition.X++
-	}
-}
-func (m *model) MoveCursorLeft() {
-	if m.cursorPosition.X > 0 {
-		m.cursorPosition.X--
-	}
-}
-func (m *model) FlagTile() {
-	if m.moves == 0 {
+func (m *model) MoveCursorUp(quantifier uint16) {
+	if m.cursorPosition.Y >= uint16(m.gameEngine.GetHeight())-1 {
 		return
 	}
-	m.moves++
+
+	isOutOfBounds := m.cursorPosition.Y+quantifier >= m.config.Height
+	if isOutOfBounds {
+		m.MoveCursorToTopRow(1)
+		return
+	}
+	m.cursorPosition.Y += quantifier
+
+}
+func (m *model) MoveCursorDown(quantifier uint16) {
+	if m.cursorPosition.Y <= 0 {
+		return
+	}
+
+	isOutOfBounds := int32(m.cursorPosition.Y)-int32(quantifier) < 0
+	if isOutOfBounds {
+		m.MoveCursorToBottomRow(1)
+		return
+	}
+	m.cursorPosition.Y -= quantifier
+
+}
+func (m *model) MoveCursorRight(quantifier uint16) {
+	if m.cursorPosition.X >= uint16(m.gameEngine.GetWidth())-1 {
+		return
+	}
+
+	isOutOfBounds := m.cursorPosition.X-quantifier >= m.config.Width
+	if isOutOfBounds {
+		m.MoveCursorToLastColumn(1)
+		return
+	}
+	m.cursorPosition.X += quantifier
+}
+
+func (m *model) MoveCursorLeft(quantifier uint16) {
+	if m.cursorPosition.X == 0 {
+		return
+	}
+	isOutOfBounds := int32(m.cursorPosition.X)-int32(quantifier) < 0
+	if isOutOfBounds {
+		m.MoveCursorToFirstColumn(1)
+		return
+	}
+	m.cursorPosition.X -= quantifier
+}
+
+func (m *model) FlagTile(_ uint16) {
+	if !m.openedATile {
+		return
+	}
 
 	m.gameEngine.FlagToggleTile(m.cursorPosition)
 
@@ -264,42 +294,64 @@ func (m *model) FlagTile() {
 		m.flags--
 	}
 }
-func (m *model) OpenTile() {
-	if m.moves == 0 {
+func (m *model) OpenTile(_ uint16) {
+	if !m.openedATile {
 		m.gameEngine.SetMines(m.cursorPosition)
+		m.openedATile = true
 	}
-	m.moves++
 	m.openTile(m.cursorPosition)
 }
 
-func (m *model) MoveCursorToTopRow() {
-	m.moves++
-	m.cursorPosition.Y = m.config.Height - 1
+func (m *model) MoveCursorToTopRow(quantifier uint16) {
+	if quantifier == 1 {
+		m.cursorPosition.Y = m.config.Height - 1
+		return
+	}
+	isOutOfBounds := int32(m.config.Height)-int32(quantifier) < 0
+	if isOutOfBounds {
+		m.cursorPosition.Y = m.config.Height - 1
+		return
+	}
+	m.cursorPosition.Y = m.config.Height - quantifier
 }
 
-func (m *model) MoveCursorToBottomRow() {
-	m.moves++
-	m.cursorPosition.Y = 0
+func (m *model) MoveCursorToBottomRow(quantifier uint16) {
+	if quantifier == 1 {
+		m.cursorPosition.Y = 0
+		return
+	}
+	isOutOfBounds := int32(m.config.Height)-int32(quantifier) < 0
+	if isOutOfBounds {
+		m.cursorPosition.Y = m.config.Height - 1
+		return
+	}
+	m.cursorPosition.Y = m.config.Height - quantifier
 }
 
-func (m *model) MoveCursorToFirstColumn() {
-	m.moves++
+func (m *model) MoveCursorToFirstColumn(_ uint16) {
 	m.cursorPosition.X = 0
 }
 
-func (m *model) MoveCursorToLastColumn() {
-	m.moves++
+func (m *model) MoveCursorToLastColumn(quantifier uint16) {
 	m.cursorPosition.X = m.config.Width - 1
+	if quantifier == 1 {
+		return
+	}
+	isOutOfBounds := int32(m.cursorPosition.Y)-int32(quantifier) < 0
+	if isOutOfBounds {
+		m.MoveCursorToBottomRow(1)
+		return
+	}
+	m.cursorPosition.Y -= quantifier
 }
 
 func (m *model) doAction(action *actions.Action) {
-	multiplier := action.Multiplier
+	quantifier := action.Quantifier
 
-	var actionHandler func()
+	var actionHandler func(uint16)
 	switch action.Kind {
 	case actions.FlagTile:
 		actionHandler = m.FlagTile
-		multiplier = 1
 	case actions.MoveCursorDown:
 		actionHandler = m.MoveCursorDown
 	case actions.MoveCursorLeft:
@@ -310,24 +362,16 @@ func (m *model) doAction(action *actions.Action) {
 		actionHandler = m.MoveCursorUp
 	case actions.OpenTile:
 		actionHandler = m.OpenTile
-		multiplier = 1
 	case actions.MoveCursorToBottomRow:
 		actionHandler = m.MoveCursorToBottomRow
-		multiplier = 1
 	case actions.MoveCursorToTopRow:
 		actionHandler = m.MoveCursorToTopRow
-		multiplier = 1
 	case actions.MoveCursorToFirstColumn:
 		actionHandler = m.MoveCursorToFirstColumn
-		multiplier = 1
 	case actions.MoveCursorToLastColumn:
 		actionHandler = m.MoveCursorToLastColumn
-		multiplier = 1
 	}
-
-	for range multiplier {
-		actionHandler()
-	}
+	actionHandler(quantifier)
 }
 
 func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
@@ -358,15 +402,16 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.keyPressBuffer += msgString
 
 		if !actions.AnyBindingStartWith(m.keyPressBuffer) {
+			m.previousKeyPressBuffer = m.keyPressBuffer
 			m.keyPressBuffer = ""
 			return m, nil
 		}
 
 		action, err := actions.GetAction(m.keyPressBuffer)
-
 		if err != nil {
 			return m, nil
 		}
+
 		m.previousKeyPressBuffer = m.keyPressBuffer
 		m.keyPressBuffer = ""
 
