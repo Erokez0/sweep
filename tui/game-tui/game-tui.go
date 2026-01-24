@@ -253,7 +253,7 @@ func (m *model) MoveCursorRight(quantifier uint16) {
 		return
 	}
 
-	isOutOfBounds := m.cursorPosition.X-quantifier >= m.config.Width
+	isOutOfBounds := int32(m.cursorPosition.X)-int32(quantifier) >= int32(m.config.Width)
 	if isOutOfBounds {
 		m.MoveCursorToLastColumn(1)
 		return
