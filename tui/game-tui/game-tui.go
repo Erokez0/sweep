@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"os"
 	"strings"
-	"sync"
 	"time"
 
 	config "sweep/config"
@@ -111,7 +110,7 @@ func (m *model) openTile(position types.Position) {
 	case tiles.OpenSafe:
 		m.openAroundOpenTile(position)
 		return
-	case tiles.FlaggedSafe:
+	case tiles.FlaggedSafe, tiles.FlaggedMine:
 		m.flags--
 	}
 
@@ -149,16 +148,12 @@ func (m model) openSafeAroundTile(position types.Position) {
 		{X: x + 1, Y: y + 1},
 	}
 
-	var wg sync.WaitGroup
 	for _, neighbour := range neighbours {
-		wg.Go(func() {
-			switch m.gameEngine.GetTile(neighbour) {
-			case tiles.ClosedSafe:
-				m.openTile(neighbour)
-			}
-		})
+		switch m.gameEngine.GetTile(neighbour) {
+		case tiles.ClosedSafe:
+			m.openTile(neighbour)
+		}
 	}
-	wg.Wait()
 }
 
 func (m *model) openAroundOpenTile(position types.Position) {
@@ -191,21 +186,20 @@ func (m *model) openAroundOpenTile(position types.Position) {
 		return
 	}
 
-	var wg sync.WaitGroup
 	for _, position := range neighbours {
-		wg.Go(func() {
-			switch m.gameEngine.GetTile(position) {
-			case tiles.FlaggedMine, tiles.FlaggedSafe, tiles.OutOfBounds:
-				return
-			case tiles.ClosedSafe, tiles.ClosedMine:
-				m.gameEngine.OpenTile(position)
-			}
+		switch m.gameEngine.GetTile(position) {
+		case tiles.FlaggedMine, tiles.FlaggedSafe, tiles.OutOfBounds:
+			continue
+		}
+		m.gameEngine.OpenTile(position)
 
-			if m.gameEngine.IsFinished() {
-				defer tea.Quit()
-				return
-			}
+		if m.gameEngine.IsFinished() {
+			defer tea.Quit()
+			continue
+		}
 
+		switch m.gameEngine.GetTile(position) {
+		case tiles.OpenSafe:
 			count := m.gameEngine.CountNeighbouringMines(position)
 
 			tileContent, err := tilecontent.FromNumber(count)
@@ -217,9 +211,8 @@ func (m *model) openAroundOpenTile(position types.Position) {
 			if count == 0 {
 				m.openSafeAroundTile(position)
 			}
-		})
+		}
 	}
-	wg.Wait()
 }
 
 func (m *model) MoveCursorUp(quantifier uint16) {

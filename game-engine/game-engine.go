@@ -100,14 +100,19 @@ func (g *GameEngine) CountNeighbouringMines(position types.Position) byte {
 
 func (g *GameEngine) OpenTile(position types.Position) {
 	switch g.GetTile(position) {
-	case tiles.ClosedMine, tiles.FlaggedMine, tiles.OpenMine, tiles.OutOfBounds:
+	case tiles.ClosedMine, tiles.FlaggedMine, tiles.OpenMine:
+		g.openCount++
 		g.isFinished = true
 		g.setTile(position, tiles.OpenMine)
-	case tiles.ClosedSafe, tiles.FlaggedSafe:
+		return
+	case tiles.FlaggedSafe:
+		g.openCount++
+		g.flaggedCount--
+	case tiles.ClosedSafe:
 		g.setTile(position, tiles.OpenSafe)
 		g.openCount++
-		g.checkWinCondition()
 	}
+	g.checkWinCondition()
 }
 
 func (g *GameEngine) GetTile(position types.Position) types.Tile {
